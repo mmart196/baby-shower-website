@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { useWishlist } from '../hooks/useWishlist';
+import { useWishlistDatabase as useWishlist } from '../hooks/useWishlistDatabase';
 import { WishlistItem } from '../types';
 import { LogOut, Plus, Edit, Trash2, Check, X, Users, ShoppingBag, TrendingUp, ImageIcon, Home } from 'lucide-react';
 

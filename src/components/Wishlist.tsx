@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { WishlistItem } from '../types';
-import { useWishlist } from '../hooks/useWishlist';
+import { useWishlistDatabase as useWishlist } from '../hooks/useWishlistDatabase';
 import { ArrowLeft, Filter, ExternalLink, Check, X, ShoppingBag, ImageIcon, Clock, User } from 'lucide-react';
 
 interface WishlistProps {
@@ -11,7 +11,7 @@ interface WishlistProps {
 const categories = ['All', 'Safety', 'Travel', 'Furniture', 'Clothing', 'Feeding', 'Bedding'];
 
 export const Wishlist: React.FC<WishlistProps> = ({ onBack, isAdmin = false }) => {
-  const { items, loading, claimItem, unclaimItem } = useWishlist();
+  const { items, loading, error, claimItem, unclaimItem } = useWishlist();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showClaimDialog, setShowClaimDialog] = useState<string | null>(null);
   const [claimerName, setClaimerName] = useState('');
@@ -79,6 +79,13 @@ export const Wishlist: React.FC<WishlistProps> = ({ onBack, isAdmin = false }) =
           </h1>
           <div className="w-24"></div> {/* Spacer for centering */}
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-orange-100 border border-orange-400 text-orange-700 rounded-lg">
+            <p className="font-medium">⚠️ {error}</p>
+          </div>
+        )}
 
         {/* Category Filters */}
         <div className="flex flex-wrap gap-2 mb-6 justify-center">
