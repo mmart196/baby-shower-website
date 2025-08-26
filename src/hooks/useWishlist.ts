@@ -10,9 +10,9 @@ export const useWishlist = () => {
 
   // Load items from localStorage on mount
   useEffect(() => {
-    const storedItems = localStorage.getItem(STORAGE_KEY);
-    if (storedItems) {
-      try {
+    try {
+      const storedItems = localStorage.getItem(STORAGE_KEY);
+      if (storedItems) {
         const parsedItems = JSON.parse(storedItems);
         // Ensure dates are properly restored
         const itemsWithDates = parsedItems.map((item: any) => ({
@@ -20,14 +20,15 @@ export const useWishlist = () => {
           claimedAt: item.claimedAt ? new Date(item.claimedAt) : undefined
         }));
         setItems(itemsWithDates);
-      } catch (error) {
-        console.error('Error loading wishlist from localStorage:', error);
+      } else {
         setItems(initialWishlistItems);
       }
-    } else {
+    } catch (error) {
+      console.error('Error loading wishlist from localStorage:', error);
       setItems(initialWishlistItems);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   // Save items to localStorage whenever items change
