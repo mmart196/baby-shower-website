@@ -1,10 +1,15 @@
 import React from 'react';
 import { eventDetails } from '../data/initialData';
-import { Calendar, Clock, MapPin, Mail, Gift, Heart } from 'lucide-react';
+import { Calendar, Clock, MapPin, Mail, Gift, Heart, Settings } from 'lucide-react';
 
 interface HomepageProps {
   onNavigate: (section: 'wishlist' | 'gifts') => void;
 }
+
+const handleAdminAccess = () => {
+  window.location.hash = '#admin';
+  window.location.reload();
+};
 
 export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
   return (
@@ -80,6 +85,16 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
           <p className="text-xs mt-1">
             Made with love for our growing family
           </p>
+          
+          {/* Discrete Admin Access */}
+          <button
+            onClick={handleAdminAccess}
+            className="mt-4 text-xs text-gray-400 hover:text-gray-600 transition-colors duration-200 flex items-center gap-1 mx-auto"
+            title="Admin Access"
+          >
+            <Settings className="w-3 h-3" />
+            Admin
+          </button>
         </div>
       </div>
     </div>
