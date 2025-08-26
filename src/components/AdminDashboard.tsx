@@ -332,6 +332,12 @@ const ClaimsTab: React.FC<ClaimsTabProps> = ({ items, onUnclaim }) => {
                 {item.claimedAt && (
                   <p><strong>Claimed on:</strong> {item.claimedAt.toLocaleDateString()}</p>
                 )}
+                {item.claimMessage && (
+                  <div className="mt-3 p-2 bg-blue-50 rounded border-l-4 border-blue-400">
+                    <p className="font-medium text-blue-800 text-xs uppercase tracking-wide">Message:</p>
+                    <p className="text-blue-700 italic text-sm mt-1">"{item.claimMessage}"</p>
+                  </div>
+                )}
               </div>
             </div>
           ))}

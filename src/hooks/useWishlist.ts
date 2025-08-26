@@ -39,14 +39,15 @@ export const useWishlist = () => {
   }, [items, loading]);
 
   // Enhanced: Claim an item
-  const claimItem = useCallback((itemId: string, claimedBy?: string) => {
+  const claimItem = useCallback((itemId: string, claimedBy?: string, claimMessage?: string) => {
     setItems(prev => prev.map(item => 
       item.id === itemId 
         ? { 
             ...item, 
             claimed: true, 
             claimedBy: claimedBy || 'Anonymous',
-            claimedAt: new Date()
+            claimedAt: new Date(),
+            claimMessage: claimMessage || undefined
           }
         : item
     ));
@@ -60,7 +61,8 @@ export const useWishlist = () => {
             ...item, 
             claimed: false, 
             claimedBy: undefined,
-            claimedAt: undefined
+            claimedAt: undefined,
+            claimMessage: undefined
           }
         : item
     ));

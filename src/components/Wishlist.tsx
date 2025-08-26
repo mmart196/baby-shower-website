@@ -15,6 +15,7 @@ export const Wishlist: React.FC<WishlistProps> = ({ onBack, isAdmin = false }) =
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showClaimDialog, setShowClaimDialog] = useState<string | null>(null);
   const [claimerName, setClaimerName] = useState('');
+  const [claimMessage, setClaimMessage] = useState('');
 
   const filteredItems = items.filter(item => 
     selectedCategory === 'All' || item.category === selectedCategory
@@ -31,11 +32,18 @@ export const Wishlist: React.FC<WishlistProps> = ({ onBack, isAdmin = false }) =
 
   const confirmClaim = useCallback(() => {
     if (showClaimDialog) {
-      claimItem(showClaimDialog, claimerName || undefined);
+      claimItem(showClaimDialog, claimerName || undefined, claimMessage || undefined);
       setShowClaimDialog(null);
       setClaimerName('');
+      setClaimMessage('');
     }
-  }, [claimItem, showClaimDialog, claimerName]);
+  }, [claimItem, showClaimDialog, claimerName, claimMessage]);
+
+  const cancelClaim = useCallback(() => {
+    setShowClaimDialog(null);
+    setClaimerName('');
+    setClaimMessage('');
+  }, []);
 
   const handleUnclaim = useCallback((itemId: string) => {
     if (isAdmin) {
@@ -110,31 +118,56 @@ export const Wishlist: React.FC<WishlistProps> = ({ onBack, isAdmin = false }) =
           </div>
         )}
 
-        {/* Claim Dialog */}
+        {/* Enhanced Claim Dialog with Message */}
         {showClaimDialog && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
               <h3 className="text-xl font-semibold mb-4">Claim This Item</h3>
               <p className="text-gray-600 mb-4">
-                Let others know you're getting this gift! You can optionally provide your name.
+                Let Rachel & Michael know you're getting this gift! Share your name and a personal message.
               </p>
-              <input
-                type="text"
-                placeholder="Your name (optional)"
-                value={claimerName}
-                onChange={(e) => setClaimerName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              />
-              <div className="flex gap-3 justify-end">
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Your Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter your name"
+                    value={claimerName}
+                    onChange={(e) => setClaimerName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Message to the Couple (Optional)
+                  </label>
+                  <textarea
+                    placeholder="Write a sweet message, share why you picked this gift, or just say congratulations!"
+                    value={claimMessage}
+                    onChange={(e) => setClaimMessage(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    This message will be visible to Rachel & Michael in their admin panel
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 justify-end mt-6">
                 <button
-                  onClick={() => setShowClaimDialog(null)}
+                  onClick={cancelClaim}
                   className="px-4 py-2 text-gray-600 hover:text-gray-700"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmClaim}
-                  className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600"
+                  className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors duration-200"
                 >
                   Claim Item
                 </button>
@@ -229,6 +262,12 @@ const WishlistItemCard: React.FC<WishlistItemCardProps> = ({ item, isAdmin, onCl
               <div className="flex items-center gap-2 text-green-600 text-xs mt-1">
                 <Clock className="w-3 h-3" />
                 <span>{item.claimedAt.toLocaleDateString()}</span>
+              </div>
+            )}
+            {item.claimMessage && (
+              <div className="mt-2 p-2 bg-white rounded text-sm text-gray-700">
+                <span className="font-medium">Message: </span>
+                <span className="italic">"{item.claimMessage}"</span>
               </div>
             )}
           </div>

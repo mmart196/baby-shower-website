@@ -9,6 +9,7 @@ export interface WishlistItem {
   claimed: boolean; // Enhanced: Claim status
   claimedBy?: string; // Enhanced: Optional name of person who claimed it
   claimedAt?: Date; // Enhanced: When it was claimed
+  claimMessage?: string; // Enhanced: Optional message from claimer
 }
 
 export interface EventDetails {
