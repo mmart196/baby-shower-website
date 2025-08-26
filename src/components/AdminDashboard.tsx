@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useWishlist } from '../hooks/useWishlist';
 import { WishlistItem } from '../types';
-import { LogOut, Plus, Edit, Trash2, Check, X, Users, ShoppingBag, TrendingUp, ImageIcon } from 'lucide-react';
+import { LogOut, Plus, Edit, Trash2, Check, X, Users, ShoppingBag, TrendingUp, ImageIcon, Home } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -46,13 +46,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <h1 className="text-3xl font-bold text-gray-800">
             Admin Dashboard
           </h1>
-          <button 
-            onClick={onLogout}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => window.location.hash = ''}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </button>
+            <button 
+              onClick={onLogout}
+              className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}

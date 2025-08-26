@@ -74,6 +74,8 @@ function App() {
     switch (page) {
       case 'home':
         window.location.hash = '';
+        // Force update the URL without hash
+        window.history.pushState('', '', window.location.pathname);
         break;
       case 'wishlist':
         window.location.hash = '#wishlist';
