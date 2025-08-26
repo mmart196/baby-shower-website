@@ -35,7 +35,10 @@ jobs:
         run: pnpm install
         
       - name: Build
-        run: pnpm run build:prod
+        run: |
+          export BUILD_MODE=prod
+          npx tsc -b
+          npx vite build
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
