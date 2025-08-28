@@ -4,7 +4,7 @@ export const eventDetails: EventDetails = {
   couple: 'Rachel & Michael',
   date: 'October 4th, 2025',
   time: '5:00 PM - 9:00 PM EST',
-  location: 'Maryland (Location TBD)',
+  location: '18529 Brooke Rd, Sandy Spring, MD 20860',
   contact: 'Michael13414@gmail.com'
 };
 

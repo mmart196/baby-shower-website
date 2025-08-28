@@ -134,6 +134,12 @@ export const Wishlist: React.FC<WishlistProps> = ({ onBack, isAdmin = false }) =
                 Let Rachel & Michael know you're getting this gift! Share your name and a personal message.
               </p>
               
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">💝 Gift Receipt Request:</span> If possible, please include or send us the gift receipt in case we need to exchange or return the item. Thank you!
+                </p>
+              </div>
+              
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -153,7 +159,7 @@ export const Wishlist: React.FC<WishlistProps> = ({ onBack, isAdmin = false }) =
                     Message to the Couple (Optional)
                   </label>
                   <textarea
-                    placeholder="Write a sweet message, share why you picked this gift, or just say congratulations!"
+                    placeholder="Write a sweet message, share why you picked this gift, or just say congratulations! Feel free to mention if you'll include the gift receipt."
                     value={claimMessage}
                     onChange={(e) => setClaimMessage(e.target.value)}
                     rows={3}
