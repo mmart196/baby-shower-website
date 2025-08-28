@@ -2,8 +2,8 @@ import { WishlistItem, EventDetails, PaymentOption } from '../types';
 
 export const eventDetails: EventDetails = {
   couple: 'Rachel & Michael',
-  date: 'November 22, 2025',
-  time: '1:00 PM - 4:00 PM EST',
+  date: 'October 4th, 2025',
+  time: '5:00 PM - 9:00 PM EST',
   location: 'Maryland (Location TBD)',
   contact: 'Michael13414@gmail.com'
 };
