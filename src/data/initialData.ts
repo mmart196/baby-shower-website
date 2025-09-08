@@ -8,6 +8,8 @@ export const eventDetails: EventDetails = {
   contact: 'Michael13414@gmail.com'
 };
 
+export const amazonWishlistUrl = 'https://www.amazon.com/hz/wishlist/ls/32WJJ8WPVC567';
+
 export const paymentOptions: PaymentOption[] = [
   {
     name: 'PayPal',

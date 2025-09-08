@@ -262,6 +262,55 @@ export const useWishlistDatabase = () => {
     loadItems();
   }, []);
 
+  // Add multiple items (bulk import)
+  const addItems = useCallback(async (newItems: Omit<WishlistItem, 'id'>[]) => {
+    try {
+      console.log('Adding', newItems.length, 'items to database');
+      
+      const itemsToInsert = newItems.map(item => ({
+        name: item.name,
+        price: item.price,
+        category: item.category,
+        retailer: item.retailer,
+        link: item.link,
+        image: item.image || null,
+        claimed: false
+      }));
+
+      const { data, error: supabaseError } = await supabase
+        .from('wishlist_items')
+        .insert(itemsToInsert)
+        .select();
+
+      if (supabaseError) {
+        throw supabaseError;
+      }
+
+      // Convert database format to app format
+      const mappedItems: WishlistItem[] = (data || []).map(item => ({
+        id: item.id,
+        name: item.name,
+        price: Number(item.price),
+        category: item.category as WishlistItem['category'],
+        retailer: item.retailer,
+        link: item.link,
+        image: item.image || undefined,
+        claimed: false
+      }));
+
+      const updatedItems = [...items, ...mappedItems];
+      setItems(updatedItems);
+      saveToFallback(updatedItems);
+      
+      console.log('Successfully added', mappedItems.length, 'items');
+      return mappedItems;
+    } catch (err) {
+      console.error('Error adding items:', err);
+      setError('Failed to add items. Please try again.');
+      throw err;
+    }
+  }, [items, saveToFallback]);
+
   return {
     items,
     loading,
@@ -269,6 +318,7 @@ export const useWishlistDatabase = () => {
     claimItem,
     unclaimItem,
     addItem,
+    addItems,
     updateItem,
     deleteItem,
     getItemsByCategory,

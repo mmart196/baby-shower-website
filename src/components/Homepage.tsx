@@ -1,6 +1,6 @@
 import React from 'react';
-import { eventDetails } from '../data/initialData';
-import { Calendar, Clock, MapPin, Mail, Gift, Heart, Settings } from 'lucide-react';
+import { eventDetails, amazonWishlistUrl } from '../data/initialData';
+import { Calendar, Clock, MapPin, Mail, Gift, Heart, Settings, ExternalLink } from 'lucide-react';
 
 interface HomepageProps {
   onNavigate: (section: 'wishlist' | 'gifts') => void;
@@ -59,21 +59,36 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
           </div>
         </div>
 
+        {/* Amazon Wishlist Button - Featured */}
+        <div className="mb-6 text-center">
+          <a
+            href={amazonWishlistUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+          >
+            <Heart className="w-6 h-6" />
+            Shop Our Amazon Wishlist
+            <ExternalLink className="w-5 h-5" />
+          </a>
+          <div className="mt-3 space-y-1">
+            <p className="text-gray-600 text-sm">
+              The easiest way to get us exactly what we need!
+            </p>
+            <p className="text-gray-500 text-xs italic">
+              💝 Please include a gift receipt with your Amazon purchase in case we need to exchange
+            </p>
+          </div>
+        </div>
+
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button 
-            onClick={() => onNavigate('wishlist')}
-            className="flex items-center justify-center gap-2 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-200"
-          >
-            <Gift className="w-5 h-5" />
-            View Wishlist
-          </button>
           <button 
             onClick={() => onNavigate('gifts')}
             className="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-200"
           >
             <Heart className="w-5 h-5" />
-            Give a Gift
+            Give a Cash Gift
           </button>
         </div>
 

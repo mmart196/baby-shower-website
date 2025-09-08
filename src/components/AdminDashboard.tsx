@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useWishlistDatabase as useWishlist } from '../hooks/useWishlistDatabase';
 import { WishlistItem } from '../types';
-import { LogOut, Plus, Edit, Trash2, Check, X, Users, ShoppingBag, TrendingUp, ImageIcon, Home } from 'lucide-react';
+import { LogOut, Plus, Edit, Trash2, Check, X, Users, ShoppingBag, TrendingUp, ImageIcon, Home, Download } from 'lucide-react';
+import { WishlistImport } from './WishlistImport';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -10,10 +11,11 @@ interface AdminDashboardProps {
 type TabType = 'overview' | 'manage' | 'claims';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
-  const { items, addItem, updateItem, deleteItem, unclaimItem } = useWishlist();
+  const { items, addItem, addItems, updateItem, deleteItem, unclaimItem } = useWishlist();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isImportingWishlist, setIsImportingWishlist] = useState(false);
 
   const stats = {
     total: items.length,
@@ -37,6 +39,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       deleteItem(itemId);
     }
   }, [deleteItem]);
+
+  const handleBulkImport = useCallback(async (itemsToImport: Omit<WishlistItem, 'id'>[]) => {
+    try {
+      console.log(`Starting bulk import of ${itemsToImport.length} items`);
+      
+      // Use the efficient bulk insert function
+      await addItems(itemsToImport);
+      
+      console.log('Bulk import completed successfully');
+    } catch (error) {
+      console.error('Bulk import error:', error);
+      
+      // Fallback to individual inserts if bulk insert fails
+      console.log('Bulk insert failed, trying individual inserts...');
+      let successCount = 0;
+      for (let i = 0; i < itemsToImport.length; i++) {
+        const item = itemsToImport[i];
+        try {
+          console.log(`Adding item ${i + 1}/${itemsToImport.length}: ${item.name}`);
+          await addItem(item);
+          successCount++;
+          // Small delay to prevent rate limiting
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (itemError) {
+          console.error(`Failed to add item "${item.name}":`, itemError);
+        }
+      }
+      
+      if (successCount < itemsToImport.length) {
+        throw new Error(`Only ${successCount} of ${itemsToImport.length} items were imported successfully.`);
+      }
+    }
+  }, [addItems, addItem]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 p-4">
@@ -96,6 +131,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             onEdit={setEditingItem}
             onDelete={handleDeleteItem}
             onAdd={() => setIsAddingItem(true)}
+            onImportWishlist={() => setIsImportingWishlist(true)}
           />
         )}
         {activeTab === 'claims' && (
@@ -114,6 +150,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               setEditingItem(null);
               setIsAddingItem(false);
             }}
+          />
+        )}
+
+        {/* Wishlist Import Modal */}
+        {isImportingWishlist && (
+          <WishlistImport
+            onImport={handleBulkImport}
+            onClose={() => setIsImportingWishlist(false)}
           />
         )}
       </div>
@@ -191,19 +235,27 @@ interface ManageItemsTabProps {
   onEdit: (item: WishlistItem) => void;
   onDelete: (itemId: string) => void;
   onAdd: () => void;
+  onImportWishlist: () => void;
 }
 
-const ManageItemsTab: React.FC<ManageItemsTabProps> = ({ items, onEdit, onDelete, onAdd }) => {
+const ManageItemsTab: React.FC<ManageItemsTabProps> = ({ items, onEdit, onDelete, onAdd, onImportWishlist }) => {
   return (
     <div>
-      {/* Add Button */}
-      <div className="mb-6">
+      {/* Action Buttons */}
+      <div className="mb-6 flex flex-wrap gap-3">
         <button
           onClick={onAdd}
           className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
         >
           <Plus className="w-4 h-4" />
           Add New Item
+        </button>
+        <button
+          onClick={onImportWishlist}
+          className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
+        >
+          <Download className="w-4 h-4" />
+          Import Amazon Wishlist
         </button>
       </div>
 

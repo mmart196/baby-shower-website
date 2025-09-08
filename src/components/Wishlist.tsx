@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { WishlistItem } from '../types';
 import { useWishlistDatabase as useWishlist } from '../hooks/useWishlistDatabase';
-import { ArrowLeft, Filter, ExternalLink, Check, X, ShoppingBag, ImageIcon, Clock, User } from 'lucide-react';
+import { amazonWishlistUrl } from '../data/initialData';
+import { ArrowLeft, Filter, ExternalLink, Check, X, ShoppingBag, ImageIcon, Clock, User, Heart } from 'lucide-react';
 
 interface WishlistProps {
   onBack: () => void;
@@ -78,6 +79,28 @@ export const Wishlist: React.FC<WishlistProps> = ({ onBack, isAdmin = false }) =
             Baby Registry
           </h1>
           <div className="w-24"></div> {/* Spacer for centering */}
+        </div>
+
+        {/* Amazon Wishlist Button */}
+        <div className="mb-6 text-center">
+          <a
+            href={amazonWishlistUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+          >
+            <Heart className="w-6 h-6" />
+            View Our Amazon Wishlist
+            <ExternalLink className="w-5 h-5" />
+          </a>
+          <div className="mt-3 space-y-1">
+            <p className="text-gray-600 text-sm">
+              Browse and purchase items directly from Amazon
+            </p>
+            <p className="text-gray-500 text-xs italic">
+              💝 Please include a gift receipt with your Amazon purchase in case we need to exchange
+            </p>
+          </div>
         </div>
 
         {/* Error Message */}
