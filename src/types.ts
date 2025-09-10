@@ -26,3 +26,15 @@ export interface PaymentOption {
   link: string;
   description: string;
 }
+
+export interface RSVP {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  attending: boolean;
+  guestCount: number;
+  dietaryRestrictions?: string;
+  message?: string;
+  submittedAt: Date;
+}

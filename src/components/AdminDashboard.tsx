@@ -1,17 +1,20 @@
 import React, { useState, useCallback } from 'react';
 import { useWishlistDatabase as useWishlist } from '../hooks/useWishlistDatabase';
+import { useRSVP } from '../hooks/useRSVP';
 import { WishlistItem } from '../types';
-import { LogOut, Plus, Edit, Trash2, Check, X, Users, ShoppingBag, TrendingUp, ImageIcon, Home, Download } from 'lucide-react';
+import { LogOut, Plus, Edit, Trash2, Check, X, Users, ShoppingBag, TrendingUp, ImageIcon, Home, Download, UserCheck } from 'lucide-react';
 import { WishlistImport } from './WishlistImport';
+import { RSVPTab } from './RSVPTab';
 
 interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type TabType = 'overview' | 'manage' | 'claims';
+type TabType = 'overview' | 'manage' | 'claims' | 'rsvps';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const { items, addItem, addItems, updateItem, deleteItem, unclaimItem } = useWishlist();
+  const { rsvps, stats: rsvpStats, deleteRSVP } = useRSVP();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
@@ -105,7 +108,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             [
               { id: 'overview', label: 'Overview', icon: TrendingUp },
               { id: 'manage', label: 'Manage Items', icon: ShoppingBag },
-              { id: 'claims', label: 'Claims', icon: Users }
+              { id: 'claims', label: 'Claims', icon: Users },
+              { id: 'rsvps', label: 'RSVPs', icon: UserCheck }
             ] as const
           ).map(tab => (
             <button
@@ -138,6 +142,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <ClaimsTab 
             items={items.filter(item => item.claimed)}
             onUnclaim={unclaimItem}
+          />
+        )}
+        {activeTab === 'rsvps' && (
+          <RSVPTab 
+            rsvps={rsvps}
+            stats={rsvpStats}
+            onDelete={deleteRSVP}
           />
         )}
 

@@ -40,6 +40,40 @@ CREATE POLICY "Enable update access for all users" ON wishlist_items
 CREATE POLICY "Enable delete access for all users" ON wishlist_items
   FOR DELETE USING (true);
 
+-- Create RSVPs table
+CREATE TABLE IF NOT EXISTS rsvps (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT,
+  attending BOOLEAN NOT NULL DEFAULT true,
+  guest_count INTEGER NOT NULL DEFAULT 1,
+  dietary_restrictions TEXT,
+  message TEXT
+);
+
+-- Create indexes for RSVP table
+CREATE INDEX IF NOT EXISTS idx_rsvps_attending ON rsvps(attending);
+CREATE INDEX IF NOT EXISTS idx_rsvps_created_at ON rsvps(created_at);
+CREATE INDEX IF NOT EXISTS idx_rsvps_name ON rsvps(name);
+
+-- Enable Row Level Security for RSVPs
+ALTER TABLE rsvps ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for RSVP access
+CREATE POLICY "Enable read access for all users" ON rsvps
+  FOR SELECT USING (true);
+
+CREATE POLICY "Enable insert access for all users" ON rsvps
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Enable update access for all users" ON rsvps
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Enable delete access for all users" ON rsvps
+  FOR DELETE USING (true);
+
 -- Insert initial data (matching your current items)
 INSERT INTO wishlist_items (name, price, category, retailer, link, image, claimed) VALUES
 ('Convertible Car Seat', 199.99, 'Safety', 'Amazon', 'https://www.amazon.com/dp/B07WNQBXZP', 'https://m.media-amazon.com/images/I/71Z5Y9Z6iBL._AC_SX466_.jpg', false),

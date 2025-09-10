@@ -1,9 +1,9 @@
 import React from 'react';
 import { eventDetails, amazonWishlistUrl } from '../data/initialData';
-import { Calendar, Clock, MapPin, Mail, Gift, Heart, Settings, ExternalLink } from 'lucide-react';
+import { Calendar, Clock, MapPin, Mail, Gift, Heart, Settings, ExternalLink, UserCheck } from 'lucide-react';
 
 interface HomepageProps {
-  onNavigate: (section: 'wishlist' | 'gifts') => void;
+  onNavigate: (section: 'wishlist' | 'gifts' | 'rsvp') => void;
 }
 
 const handleAdminAccess = () => {
@@ -83,6 +83,13 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button 
+            onClick={() => onNavigate('rsvp')}
+            className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-200"
+          >
+            <UserCheck className="w-5 h-5" />
+            RSVP Now
+          </button>
           <button 
             onClick={() => onNavigate('gifts')}
             className="flex items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-4 px-8 rounded-2xl shadow-lg transform hover:scale-105 transition-all duration-200"

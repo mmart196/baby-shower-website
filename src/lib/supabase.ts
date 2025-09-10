@@ -52,6 +52,41 @@ export type Database = {
           claim_message?: string | null
         }
       }
+      rsvps: {
+        Row: {
+          id: string
+          created_at: string
+          name: string
+          email: string | null
+          phone: string | null
+          attending: boolean
+          guest_count: number
+          dietary_restrictions: string | null
+          message: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          name: string
+          email?: string | null
+          phone?: string | null
+          attending?: boolean
+          guest_count?: number
+          dietary_restrictions?: string | null
+          message?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          name?: string
+          email?: string | null
+          phone?: string | null
+          attending?: boolean
+          guest_count?: number
+          dietary_restrictions?: string | null
+          message?: string | null
+        }
+      }
     }
   }
 }

@@ -4,9 +4,11 @@ import { Wishlist } from './components/Wishlist';
 import { CashGifts } from './components/CashGifts';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
+import { RSVPForm } from './components/RSVPForm';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useRSVP } from './hooks/useRSVP';
 
-type Page = 'home' | 'wishlist' | 'gifts' | 'admin-login' | 'admin-dashboard';
+type Page = 'home' | 'wishlist' | 'gifts' | 'rsvp' | 'admin-login' | 'admin-dashboard';
 
 const ADMIN_PASSWORD = 'babybower2025'; // In production, this should be in environment variables
 const ADMIN_SESSION_KEY = 'baby-shower-admin-session';
@@ -15,6 +17,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [loginError, setLoginError] = useState<string>('');
+  const { submitRSVP } = useRSVP();
 
   // Check for existing admin session on mount
   useEffect(() => {
@@ -45,6 +48,9 @@ function App() {
           break;
         case '#gifts':
           setCurrentPage('gifts');
+          break;
+        case '#rsvp':
+          setCurrentPage('rsvp');
           break;
         case '#admin':
           if (isAdminAuthenticated) {
@@ -83,6 +89,9 @@ function App() {
       case 'gifts':
         window.location.hash = '#gifts';
         break;
+      case 'rsvp':
+        window.location.hash = '#rsvp';
+        break;
       case 'admin-login':
         window.location.hash = '#admin';
         break;
@@ -113,7 +122,7 @@ function App() {
     navigate('home');
   };
 
-  const handleNavigateToSection = (section: 'wishlist' | 'gifts') => {
+  const handleNavigateToSection = (section: 'wishlist' | 'gifts' | 'rsvp') => {
     navigate(section);
   };
 
@@ -137,6 +146,13 @@ function App() {
         
         {currentPage === 'gifts' && (
           <CashGifts onBack={handleBackToHome} />
+        )}
+        
+        {currentPage === 'rsvp' && (
+          <RSVPForm 
+            onBack={handleBackToHome}
+            onSubmit={submitRSVP}
+          />
         )}
         
         {currentPage === 'admin-login' && (
