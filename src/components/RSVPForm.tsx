@@ -4,7 +4,7 @@ import { RSVP } from '../types';
 
 interface RSVPFormProps {
   onBack: () => void;
-  onSubmit: (rsvp: Omit<RSVP, 'id' | 'submittedAt'>) => Promise<void>;
+  onSubmit: (rsvp: Omit<RSVP, 'id' | 'submittedAt'>) => Promise<RSVP | void>;
 }
 
 export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
