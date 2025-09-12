@@ -119,7 +119,7 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
                   <p className="text-sm text-gray-600 font-medium">Questions?</p>
                   <a 
                     href={`mailto:${eventDetails.contact}`}
-                    className="text-lg text-purple-600 hover:text-purple-700 font-bold underline decoration-2 decoration-purple-300 hover:decoration-purple-500 transition-colors"
+                    className="text-sm text-purple-600 hover:text-purple-700 font-medium underline decoration-1 decoration-purple-300 hover:decoration-purple-500 transition-colors"
                   >
                     {eventDetails.contact}
                   </a>
