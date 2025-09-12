@@ -63,7 +63,7 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
                     controls
                     preload="auto"
                   >
-                    <source src="/babyultrasound.mp4" type="video/mp4" />
+                    <source src="./babyultrasound.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                   <div className="absolute inset-0 rounded-xl ring-4 ring-pink-300/60 pointer-events-none"></div>
