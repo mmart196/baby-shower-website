@@ -146,17 +146,17 @@ const FormalDate: React.FC = () => (
         Saturday
       </p>
 
-      {/* The big day — May | 16 | MMXXVI in horizontal layout with rules */}
-      <div className="flex items-center justify-center gap-3 md:gap-6 mb-4">
-        {/* MAY */}
+      {/* The big day — May | 16 | 2026 in horizontal layout with rules */}
+      <div className="flex items-end justify-center gap-3 md:gap-6 mb-5">
+        {/* Month */}
         <div className="text-right flex-1 min-w-0">
-          <p className="font-serif-display text-base md:text-3xl tracking-[0.2em] md:tracking-[0.35em] text-gray-800 uppercase">
+          <p className="font-serif-display text-3xl md:text-5xl font-medium text-gray-700 leading-none">
             May
           </p>
         </div>
 
-        {/* 16 — massive centerpiece */}
-        <div className="relative flex-none px-2">
+        {/* Day — massive centerpiece */}
+        <div className="relative flex-none px-3">
           <div className="h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent absolute top-1 md:top-2 left-0 right-0" />
           <p className="font-serif-display text-7xl md:text-9xl font-medium text-gray-900 leading-none tabular-nums engraved-text">
             16
@@ -164,21 +164,21 @@ const FormalDate: React.FC = () => (
           <div className="h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent absolute bottom-1 md:bottom-2 left-0 right-0" />
         </div>
 
-        {/* MMXXVI (year in roman numerals) */}
+        {/* Year */}
         <div className="text-left flex-1 min-w-0">
-          <p className="font-serif-display text-base md:text-3xl tracking-[0.15em] md:tracking-[0.35em] text-gray-800 uppercase">
-            MMXXVI
+          <p className="font-serif-display text-3xl md:text-5xl font-medium text-gray-700 leading-none tabular-nums">
+            2026
           </p>
         </div>
       </div>
 
       {/* Time */}
       <div className="flex items-center justify-center gap-2 md:gap-3">
-        <span className="h-px w-6 md:w-12 bg-amber-400/50" />
-        <p className="font-serif-display italic text-sm md:text-xl text-amber-800 whitespace-nowrap">
-          ten o'clock in the morning
+        <span className="h-px w-8 md:w-14 bg-amber-400/50" />
+        <p className="font-serif-display text-xl md:text-2xl text-amber-800 tabular-nums whitespace-nowrap">
+          10 AM
         </p>
-        <span className="h-px w-6 md:w-12 bg-amber-400/50" />
+        <span className="h-px w-8 md:w-14 bg-amber-400/50" />
       </div>
     </div>
   </div>
