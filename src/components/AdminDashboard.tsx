@@ -1,100 +1,68 @@
-import React, { useState, useCallback } from 'react';
-import { useWishlistDatabase as useWishlist } from '../hooks/useWishlistDatabase';
+import React, { useState } from 'react';
 import { useRSVP } from '../hooks/useRSVP';
-import { WishlistItem } from '../types';
-import { LogOut, Plus, Edit, Trash2, Check, X, Users, ShoppingBag, TrendingUp, ImageIcon, Home, Download, UserCheck } from 'lucide-react';
-import { WishlistImport } from './WishlistImport';
-import { RSVPTab } from './RSVPTab';
+import { LogOut, Home, Users, Check, X, Trash2, Download } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type TabType = 'overview' | 'manage' | 'claims' | 'rsvps';
-
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
-  const { items, addItem, addItems, updateItem, deleteItem, unclaimItem } = useWishlist();
-  const { rsvps, stats: rsvpStats, deleteRSVP } = useRSVP();
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
-  const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
-  const [isAddingItem, setIsAddingItem] = useState(false);
-  const [isImportingWishlist, setIsImportingWishlist] = useState(false);
+  const { rsvps, stats, deleteRSVP } = useRSVP();
+  const [filter, setFilter] = useState<'all' | 'attending' | 'not-attending'>('all');
 
-  const stats = {
-    total: items.length,
-    claimed: items.filter(item => item.claimed).length,
-    unclaimed: items.filter(item => !item.claimed).length,
-    totalValue: items.reduce((sum, item) => sum + item.price, 0)
+  const filteredRSVPs = rsvps.filter(rsvp => {
+    if (filter === 'attending') return rsvp.attending;
+    if (filter === 'not-attending') return !rsvp.attending;
+    return true;
+  });
+
+  const handleExport = () => {
+    const csvContent = [
+      ['Name', 'Email', 'Phone', 'Attending', 'Guests', 'Dietary', 'Message', 'Submitted'].join(','),
+      ...filteredRSVPs.map(rsvp => [
+        `"${rsvp.name}"`,
+        `"${rsvp.email || ''}"`,
+        `"${rsvp.phone || ''}"`,
+        rsvp.attending ? 'Yes' : 'No',
+        rsvp.guestCount,
+        `"${rsvp.dietaryRestrictions || ''}"`,
+        `"${rsvp.message || ''}"`,
+        new Date(rsvp.submittedAt).toLocaleDateString()
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `baptism-rsvps-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
   };
 
-  const handleSaveItem = useCallback((item: Partial<WishlistItem>) => {
-    if (editingItem) {
-      updateItem(editingItem.id, item);
-      setEditingItem(null);
-    } else {
-      addItem(item as Omit<WishlistItem, 'id'>);
-      setIsAddingItem(false);
-    }
-  }, [editingItem, updateItem, addItem]);
-
-  const handleDeleteItem = useCallback((itemId: string) => {
-    if (confirm('Are you sure you want to delete this item?')) {
-      deleteItem(itemId);
-    }
-  }, [deleteItem]);
-
-  const handleBulkImport = useCallback(async (itemsToImport: Omit<WishlistItem, 'id'>[]) => {
-    try {
-      console.log(`Starting bulk import of ${itemsToImport.length} items`);
-      
-      // Use the efficient bulk insert function
-      await addItems(itemsToImport);
-      
-      console.log('Bulk import completed successfully');
-    } catch (error) {
-      console.error('Bulk import error:', error);
-      
-      // Fallback to individual inserts if bulk insert fails
-      console.log('Bulk insert failed, trying individual inserts...');
-      let successCount = 0;
-      for (let i = 0; i < itemsToImport.length; i++) {
-        const item = itemsToImport[i];
-        try {
-          console.log(`Adding item ${i + 1}/${itemsToImport.length}: ${item.name}`);
-          await addItem(item);
-          successCount++;
-          // Small delay to prevent rate limiting
-          await new Promise(resolve => setTimeout(resolve, 100));
-        } catch (itemError) {
-          console.error(`Failed to add item "${item.name}":`, itemError);
-        }
-      }
-      
-      if (successCount < itemsToImport.length) {
-        throw new Error(`Only ${successCount} of ${itemsToImport.length} items were imported successfully.`);
-      }
-    }
-  }, [addItems, addItem]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-blue-50 p-4">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Admin Dashboard
-          </h1>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-500 rounded-lg">
+              <Users className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Baptism RSVP Dashboard
+            </h1>
+          </div>
           <div className="flex gap-3">
             <button 
               onClick={() => window.location.hash = ''}
-              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-medium transition-all"
             >
               <Home className="w-4 h-4" />
               Home
             </button>
             <button 
               onClick={onLogout}
-              className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
+              className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl font-medium transition-all"
             >
               <LogOut className="w-4 h-4" />
               Logout
@@ -102,441 +70,151 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {(
-            [
-              { id: 'overview', label: 'Overview', icon: TrendingUp },
-              { id: 'manage', label: 'Manage Items', icon: ShoppingBag },
-              { id: 'claims', label: 'Claims', icon: Users },
-              { id: 'rsvps', label: 'RSVPs', icon: UserCheck }
-            ] as const
-          ).map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-purple-500 text-white shadow-lg'
-                  : 'bg-white/60 text-gray-700 hover:bg-white/80'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'overview' && <OverviewTab stats={stats} />}
-        {activeTab === 'manage' && (
-          <ManageItemsTab 
-            items={items}
-            onEdit={setEditingItem}
-            onDelete={handleDeleteItem}
-            onAdd={() => setIsAddingItem(true)}
-            onImportWishlist={() => setIsImportingWishlist(true)}
-          />
-        )}
-        {activeTab === 'claims' && (
-          <ClaimsTab 
-            items={items.filter(item => item.claimed)}
-            onUnclaim={unclaimItem}
-          />
-        )}
-        {activeTab === 'rsvps' && (
-          <RSVPTab 
-            rsvps={rsvps}
-            stats={rsvpStats}
-            onDelete={deleteRSVP}
-          />
-        )}
-
-        {/* Edit/Add Item Modal */}
-        {(editingItem || isAddingItem) && (
-          <ItemEditModal
-            item={editingItem}
-            onSave={handleSaveItem}
-            onCancel={() => {
-              setEditingItem(null);
-              setIsAddingItem(false);
-            }}
-          />
-        )}
-
-        {/* Wishlist Import Modal */}
-        {isImportingWishlist && (
-          <WishlistImport
-            onImport={handleBulkImport}
-            onClose={() => setIsImportingWishlist(false)}
-          />
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Overview Tab Component
-interface OverviewTabProps {
-  stats: {
-    total: number;
-    claimed: number;
-    unclaimed: number;
-    totalValue: number;
-  };
-}
-
-const OverviewTab: React.FC<OverviewTabProps> = ({ stats }) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-100 rounded-full">
-            <ShoppingBag className="w-6 h-6 text-blue-600" />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-amber-100">
+            <p className="text-sm text-gray-600 mb-1">Total RSVPs</p>
+            <p className="text-3xl font-bold text-gray-800">{stats.total}</p>
           </div>
-          <div>
-            <p className="text-gray-600 text-sm">Total Items</p>
-            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+          <div className="bg-green-50 rounded-2xl p-6 shadow-lg border border-green-100">
+            <p className="text-sm text-green-600 mb-1">Attending</p>
+            <p className="text-3xl font-bold text-green-700">{stats.attending}</p>
+          </div>
+          <div className="bg-red-50 rounded-2xl p-6 shadow-lg border border-red-100">
+            <p className="text-sm text-red-600 mb-1">Not Attending</p>
+            <p className="text-3xl font-bold text-red-700">{stats.notAttending}</p>
+          </div>
+          <div className="bg-blue-50 rounded-2xl p-6 shadow-lg border border-blue-100">
+            <p className="text-sm text-blue-600 mb-1">Total Guests</p>
+            <p className="text-3xl font-bold text-blue-700">{stats.totalGuests}</p>
           </div>
         </div>
-      </div>
-      
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-green-100 rounded-full">
-            <Check className="w-6 h-6 text-green-600" />
-          </div>
-          <div>
-            <p className="text-gray-600 text-sm">Claimed</p>
-            <p className="text-2xl font-bold text-gray-800">{stats.claimed}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-orange-100 rounded-full">
-            <X className="w-6 h-6 text-orange-600" />
-          </div>
-          <div>
-            <p className="text-gray-600 text-sm">Available</p>
-            <p className="text-2xl font-bold text-gray-800">{stats.unclaimed}</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-purple-100 rounded-full">
-            <TrendingUp className="w-6 h-6 text-purple-600" />
-          </div>
-          <div>
-            <p className="text-gray-600 text-sm">Total Value</p>
-            <p className="text-2xl font-bold text-gray-800">${stats.totalValue.toFixed(2)}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-// Manage Items Tab Component
-interface ManageItemsTabProps {
-  items: WishlistItem[];
-  onEdit: (item: WishlistItem) => void;
-  onDelete: (itemId: string) => void;
-  onAdd: () => void;
-  onImportWishlist: () => void;
-}
-
-const ManageItemsTab: React.FC<ManageItemsTabProps> = ({ items, onEdit, onDelete, onAdd, onImportWishlist }) => {
-  return (
-    <div>
-      {/* Action Buttons */}
-      <div className="mb-6 flex flex-wrap gap-3">
-        <button
-          onClick={onAdd}
-          className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
-        >
-          <Plus className="w-4 h-4" />
-          Add New Item
-        </button>
-        <button
-          onClick={onImportWishlist}
-          className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200"
-        >
-          <Download className="w-4 h-4" />
-          Import Amazon Wishlist
-        </button>
-      </div>
-
-      {/* Items List */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Item
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Price
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {items.map(item => (
-                <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                        {item.image ? (
-                          <img 
-                            src={item.image} 
-                            alt={item.name}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <ImageIcon className="w-5 h-5 text-gray-400" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                        <div className="text-sm text-gray-500">{item.retailer}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${item.price.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                      {item.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {item.claimed ? (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Claimed
-                      </span>
-                    ) : (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                        Available
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => onEdit(item)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => onDelete(item.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Claims Tab Component
-interface ClaimsTabProps {
-  items: WishlistItem[];
-  onUnclaim: (itemId: string) => void;
-}
-
-const ClaimsTab: React.FC<ClaimsTabProps> = ({ items, onUnclaim }) => {
-  return (
-    <div>
-      {items.length === 0 ? (
-        <div className="text-center py-12">
-          <Users className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600 text-lg">No items have been claimed yet.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map(item => (
-            <div key={item.id} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-              <div className="flex items-start justify-between mb-4">
-                <h3 className="font-semibold text-lg text-gray-800">{item.name}</h3>
-                <button
-                  onClick={() => onUnclaim(item.id)}
-                  className="text-red-600 hover:text-red-700"
-                  title="Unclaim item"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="space-y-2 text-sm text-gray-600">
-                <p><strong>Claimed by:</strong> {item.claimedBy || 'Anonymous'}</p>
-                <p><strong>Price:</strong> ${item.price.toFixed(2)}</p>
-                <p><strong>Category:</strong> {item.category}</p>
-                {item.claimedAt && (
-                  <p><strong>Claimed on:</strong> {item.claimedAt.toLocaleDateString()}</p>
-                )}
-                {item.claimMessage && (
-                  <div className="mt-3 p-2 bg-blue-50 rounded border-l-4 border-blue-400">
-                    <p className="font-medium text-blue-800 text-xs uppercase tracking-wide">Message:</p>
-                    <p className="text-blue-700 italic text-sm mt-1">"{item.claimMessage}"</p>
-                  </div>
-                )}
-              </div>
+        {/* Filters & Export */}
+        <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 border border-amber-100">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setFilter('all')}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  filter === 'all' 
+                    ? 'bg-amber-500 text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilter('attending')}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  filter === 'attending' 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Attending
+              </button>
+              <button
+                onClick={() => setFilter('not-attending')}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  filter === 'not-attending' 
+                    ? 'bg-red-500 text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Not Attending
+              </button>
             </div>
-          ))}
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium transition-all"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+          </div>
         </div>
-      )}
-    </div>
-  );
-};
 
-// Item Edit Modal Component
-interface ItemEditModalProps {
-  item: WishlistItem | null;
-  onSave: (item: Partial<WishlistItem>) => void;
-  onCancel: () => void;
-}
-
-const ItemEditModal: React.FC<ItemEditModalProps> = ({ item, onSave, onCancel }) => {
-  const [formData, setFormData] = useState<Partial<WishlistItem>>({
-    name: item?.name || '',
-    price: item?.price || 0,
-    category: item?.category || 'Safety',
-    retailer: item?.retailer || '',
-    link: item?.link || '',
-    image: item?.image || ''
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  const handleChange = (field: keyof WishlistItem, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <h3 className="text-xl font-semibold mb-4">
-          {item ? 'Edit Item' : 'Add New Item'}
-        </h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Name
-            </label>
-            <input
-              type="text"
-              value={formData.name || ''}
-              onChange={(e) => handleChange('name', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
+        {/* RSVPs Table */}
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-amber-100">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Name</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Contact</th>
+                  <th className="text-center px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
+                  <th className="text-center px-6 py-4 text-sm font-semibold text-gray-600">Guests</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Dietary</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Message</th>
+                  <th className="text-center px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredRSVPs.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                      No RSVPs found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRSVPs.map((rsvp) => (
+                    <tr key={rsvp.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-gray-800">{rsvp.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(rsvp.submittedAt).toLocaleDateString()}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        {rsvp.email && <p className="text-sm text-gray-600">{rsvp.email}</p>}
+                        {rsvp.phone && <p className="text-sm text-gray-600">{rsvp.phone}</p>}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {rsvp.attending ? (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                            <Check className="w-3 h-3" />
+                            Yes
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
+                            <X className="w-3 h-3" />
+                            No
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="font-medium text-gray-800">{rsvp.guestCount}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-gray-600 max-w-xs truncate">
+                          {rsvp.dietaryRestrictions || '-'}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-sm text-gray-600 max-w-xs truncate">
+                          {rsvp.message || '-'}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() => {
+                            if (confirm('Delete this RSVP?')) {
+                              deleteRSVP(rsvp.id);
+                            }
+                          }}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Price
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.price || ''}
-              onChange={(e) => handleChange('price', parseFloat(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <select
-              value={formData.category || 'Safety'}
-              onChange={(e) => handleChange('category', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="Safety">Safety</option>
-              <option value="Travel">Travel</option>
-              <option value="Furniture">Furniture</option>
-              <option value="Clothing">Clothing</option>
-              <option value="Feeding">Feeding</option>
-              <option value="Bedding">Bedding</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Retailer
-            </label>
-            <input
-              type="text"
-              value={formData.retailer || ''}
-              onChange={(e) => handleChange('retailer', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Link
-            </label>
-            <input
-              type="url"
-              value={formData.link || ''}
-              onChange={(e) => handleChange('link', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Image URL (optional)
-            </label>
-            <input
-              type="url"
-              value={formData.image || ''}
-              onChange={(e) => handleChange('image', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="https://..."
-            />
-          </div>
-          <div className="flex gap-3 justify-end pt-4">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-4 py-2 text-gray-600 hover:text-gray-700"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
-            >
-              {item ? 'Save Changes' : 'Add Item'}
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

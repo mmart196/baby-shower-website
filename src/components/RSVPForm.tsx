@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Check, X, Users, MessageCircle, Utensils, Mail, Phone, User } from 'lucide-react';
+import { ArrowLeft, Check, X, Users, MessageCircle, Utensils, Mail, Phone, User, Church, Cross } from 'lucide-react';
 import { RSVP } from '../types';
 
 interface RSVPFormProps {
@@ -55,24 +55,24 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-blue-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="w-8 h-8 text-green-600" />
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-8 text-center border border-amber-100">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Cross className="w-8 h-8 text-amber-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">RSVP Confirmed!</h2>
             <p className="text-gray-600 mb-6">
-              Thank you for your response, {formData.name}! We're {formData.attending ? 'excited to see you' : 'sorry you can\'t make it'} at the baby shower.
+              Thank you for your response, {formData.name}! We're {formData.attending ? 'blessed to have you join us' : 'sorry you can\'t make it'} for this special sacrament.
             </p>
             {formData.attending && (
               <p className="text-sm text-gray-500 mb-6">
-                We'll see you on October 4th! 🎉
+                We'll see you on May 17th! God bless ✝️
               </p>
             )}
             <button
               onClick={onBack}
-              className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
+              className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
             >
               Back to Homepage
             </button>
@@ -83,34 +83,38 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-blue-50 p-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button 
             onClick={onBack}
-            className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to Main
+            Back
           </button>
-          <h1 className="text-3xl font-bold text-gray-800">
-            RSVP
-          </h1>
-          <div className="w-24"></div> {/* Spacer for centering */}
+          <div className="flex items-center gap-2">
+            <Cross className="w-6 h-6 text-amber-500" />
+            <h1 className="text-2xl font-bold text-gray-800">RSVP</h1>
+          </div>
+          <div className="w-20"></div>
         </div>
 
         {/* Form */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-8">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-8 border border-amber-100">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-              Rachel & Michael's Baby Shower
-            </h2>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Church className="w-6 h-6 text-amber-500" />
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Baptism of Baby Martinez
+              </h2>
+            </div>
             <p className="text-gray-600">
-              October 4th, 2025 • 5:00 PM - 9:00 PM EST
+              May 17th, 2025 • 11:00 AM EST
             </p>
             <p className="text-gray-600">
-              18529 Brooke Rd, Sandy Spring, MD 20860
+              St. John the Baptist Catholic Church
             </p>
           </div>
 
@@ -125,7 +129,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 placeholder="Enter your full name"
                 required
               />
@@ -142,7 +146,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   placeholder="your@email.com"
                 />
               </div>
@@ -155,7 +159,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   placeholder="(555) 123-4567"
                 />
               </div>
@@ -172,24 +176,24 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
                   onClick={() => handleInputChange('attending', true)}
                   className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
                     formData.attending
-                      ? 'bg-green-500 text-white shadow-lg'
+                      ? 'bg-amber-500 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   <Check className="w-4 h-4" />
-                  Yes, I'll be there!
+                  Joyfully Accept
                 </button>
                 <button
                   type="button"
                   onClick={() => handleInputChange('attending', false)}
                   className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium transition-all duration-200 ${
                     !formData.attending
-                      ? 'bg-red-500 text-white shadow-lg'
+                      ? 'bg-gray-500 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   <X className="w-4 h-4" />
-                  Sorry, can't make it
+                  Regretfully Decline
                 </button>
               </div>
             </div>
@@ -204,9 +208,9 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
                 <select
                   value={formData.guestCount}
                   onChange={(e) => handleInputChange('guestCount', parseInt(e.target.value))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 >
-                  {[1, 2, 3, 4, 5, 6].map(num => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
                     <option key={num} value={num}>
                       {num} {num === 1 ? 'person' : 'people'}
                     </option>
@@ -226,7 +230,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
                   type="text"
                   value={formData.dietaryRestrictions}
                   onChange={(e) => handleInputChange('dietaryRestrictions', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   placeholder="Let us know about any dietary needs"
                 />
               </div>
@@ -236,14 +240,14 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <MessageCircle className="w-4 h-4 inline mr-1" />
-                Message for Rachel & Michael
+                Message for the Family (Optional)
               </label>
               <textarea
                 value={formData.message}
                 onChange={(e) => handleInputChange('message', e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
-                placeholder="Share your excitement or well wishes!"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
+                placeholder="Share your blessings and well wishes!"
               />
             </div>
 
@@ -258,7 +262,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-amber-500 to-blue-500 hover:from-amber-600 hover:to-blue-600 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

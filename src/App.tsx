@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Homepage } from './components/Homepage';
-import { Wishlist } from './components/Wishlist';
-import { CashGifts } from './components/CashGifts';
 import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
 import { RSVPForm } from './components/RSVPForm';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useRSVP } from './hooks/useRSVP';
 
-type Page = 'home' | 'wishlist' | 'gifts' | 'rsvp' | 'admin-login' | 'admin-dashboard';
+type Page = 'home' | 'rsvp' | 'admin-login' | 'admin-dashboard';
 
-const ADMIN_PASSWORD = 'babybower2025'; // In production, this should be in environment variables
-const ADMIN_SESSION_KEY = 'baby-shower-admin-session';
+const ADMIN_PASSWORD = 'baptism2025'; // In production, this should be in environment variables
+const ADMIN_SESSION_KEY = 'baptism-admin-session';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -43,12 +41,6 @@ function App() {
     const handleHashChange = () => {
       const hash = window.location.hash;
       switch (hash) {
-        case '#wishlist':
-          setCurrentPage('wishlist');
-          break;
-        case '#gifts':
-          setCurrentPage('gifts');
-          break;
         case '#rsvp':
           setCurrentPage('rsvp');
           break;
@@ -80,14 +72,7 @@ function App() {
     switch (page) {
       case 'home':
         window.location.hash = '';
-        // Force update the URL without hash
         window.history.pushState('', '', window.location.pathname);
-        break;
-      case 'wishlist':
-        window.location.hash = '#wishlist';
-        break;
-      case 'gifts':
-        window.location.hash = '#gifts';
         break;
       case 'rsvp':
         window.location.hash = '#rsvp';
@@ -122,7 +107,7 @@ function App() {
     navigate('home');
   };
 
-  const handleNavigateToSection = (section: 'wishlist' | 'gifts' | 'rsvp') => {
+  const handleNavigateToSection = (section: 'rsvp') => {
     navigate(section);
   };
 
@@ -135,17 +120,6 @@ function App() {
       <div className="App">
         {currentPage === 'home' && (
           <Homepage onNavigate={handleNavigateToSection} />
-        )}
-        
-        {currentPage === 'wishlist' && (
-          <Wishlist 
-            onBack={handleBackToHome} 
-            isAdmin={isAdminAuthenticated}
-          />
-        )}
-        
-        {currentPage === 'gifts' && (
-          <CashGifts onBack={handleBackToHome} />
         )}
         
         {currentPage === 'rsvp' && (
