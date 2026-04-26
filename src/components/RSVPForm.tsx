@@ -86,15 +86,16 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
     const chickenCount = formData.mealPreferences.filter(m => m === 'chicken').length;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#fbf6ec] via-white to-[#f1f5fa] flex items-center justify-center p-4">
         <div className="max-w-md w-full">
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center border border-amber-100">
-            <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="engraved-card bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-10 text-center border border-amber-100">
+            <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 ring-1 ring-amber-200/60">
               <Cross className="w-10 h-10 text-amber-600" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-3">RSVP Confirmed!</h2>
-            <p className="text-gray-600 mb-4">
-              Thank you, {formData.name}! We're {formData.attending ? 'blessed to have you join us' : 'sorry you can\'t make it'} for Eric's baptism.
+            <p className="font-script text-4xl text-amber-700 mb-2">Thank you</p>
+            <h2 className="font-serif-display text-3xl font-medium text-gray-800 mb-3">RSVP Confirmed</h2>
+            <p className="text-gray-600 mb-4 font-serif-display italic text-lg">
+              {formData.name}, {formData.attending ? "we're blessed to have you join us" : "we're sorry you can't make it"} for Eric's baptism.
             </p>
             {formData.attending && (
               <div className="bg-gradient-to-r from-amber-50 to-blue-50 rounded-2xl p-5 mb-6">
@@ -131,11 +132,11 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-blue-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#fbf6ec] via-white to-[#f1f5fa] p-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <button 
+          <button
             onClick={onBack}
             className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium bg-white/80 px-4 py-2 rounded-full shadow-sm hover:shadow transition-all"
           >
@@ -144,25 +145,26 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
           </button>
           <div className="flex items-center gap-2 bg-white/80 px-4 py-2 rounded-full shadow-sm">
             <Cross className="w-5 h-5 text-amber-500" />
-            <h1 className="text-xl font-bold text-gray-800">RSVP</h1>
+            <h1 className="font-serif-display text-xl font-medium text-gray-800 tracking-wide">RSVP</h1>
           </div>
           <div className="w-24"></div>
         </div>
 
         {/* Form */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-10 border border-amber-100">
+        <div className="engraved-card bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-10 border border-amber-100">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-100 to-blue-100 rounded-full mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-amber-100 to-blue-100 rounded-full mb-4 ring-1 ring-amber-200/60">
               <Church className="w-8 h-8 text-amber-600" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">
-              Baptism of Eric Martinez
+            <p className="text-xs tracking-[0.4em] uppercase text-amber-700/80 mb-2">Baptism of</p>
+            <h2 className="font-script text-5xl md:text-6xl text-amber-700 leading-none mb-3">
+              Eric Martinez
             </h2>
-            <p className="text-gray-600 text-lg">
+            <p className="font-serif-display italic text-gray-600 text-lg">
               Saturday, May 16, 2026
             </p>
             <div className="inline-block mt-3 px-4 py-1 bg-amber-100 rounded-full">
-              <p className="text-amber-800 font-medium text-sm">
+              <p className="text-amber-800 font-medium text-sm tracking-wide">
                 Kindly respond by May 7, 2026
               </p>
             </div>
@@ -361,7 +363,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-blue-500 hover:from-amber-600 hover:via-amber-700 hover:to-blue-600 disabled:bg-gray-400 text-white font-bold py-5 px-8 rounded-2xl shadow-xl transition-all duration-300 flex items-center justify-center gap-3 text-lg"
+              className="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-blue-500 hover:from-amber-600 hover:via-amber-700 hover:to-blue-600 disabled:bg-gray-400 text-white font-serif-display font-medium tracking-wider py-5 px-8 rounded-full shadow-xl transition-all duration-300 flex items-center justify-center gap-3 text-xl"
             >
               {isSubmitting ? (
                 <>

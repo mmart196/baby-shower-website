@@ -12,38 +12,111 @@ const handleAdminAccess = () => {
   window.location.reload();
 };
 
+const EVENT_DATE = new Date('2026-05-16T10:00:00-04:00');
+
 // Animated Counter Component
 const AnimatedCounter: React.FC<{ target: number; duration?: number }> = ({ target, duration = 2000 }) => {
   const [count, setCount] = useState(0);
-  
+
   useEffect(() => {
     let startTime: number;
     let animationFrame: number;
-    
+
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const progress = Math.min((timestamp - startTime) / duration, 1);
       setCount(Math.floor(progress * target));
-      
+
       if (progress < 1) {
         animationFrame = requestAnimationFrame(animate);
       }
     };
-    
+
     animationFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrame);
   }, [target, duration]);
-  
+
   return <span>{count}</span>;
 };
 
 // Floating Cross Animation
 const FloatingCross: React.FC<{ delay?: number; className?: string }> = ({ delay = 0, className = '' }) => (
-  <div 
+  <div
     className={`absolute opacity-20 animate-float ${className}`}
     style={{ animationDelay: `${delay}s` }}
   >
     <Cross className="w-8 h-8 text-amber-400" />
+  </div>
+);
+
+// Ornamental section divider — gold rules around a small cross
+const OrnamentDivider: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`ornament-divider ${className}`}>
+    <Cross className="w-4 h-4 flex-none" />
+  </div>
+);
+
+// Live countdown to the celebration
+const Countdown: React.FC = () => {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000 * 60); // tick once a minute
+    return () => clearInterval(id);
+  }, []);
+
+  const diff = Math.max(0, EVENT_DATE.getTime() - now.getTime());
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+
+  if (diff === 0) {
+    return (
+      <p className="font-serif-display italic text-xl text-amber-700 text-center">
+        Today is the day — we're so glad you're here.
+      </p>
+    );
+  }
+
+  const Cell: React.FC<{ value: number; label: string }> = ({ value, label }) => (
+    <div className="flex flex-col items-center px-5 md:px-7">
+      <span className="font-serif-display text-4xl md:text-5xl font-medium text-gray-800 tabular-nums">
+        {String(value).padStart(2, '0')}
+      </span>
+      <span className="text-[10px] md:text-xs tracking-[0.25em] uppercase text-amber-700/80 mt-1">
+        {label}
+      </span>
+    </div>
+  );
+
+  return (
+    <div className="flex items-center justify-center divide-x divide-amber-200">
+      <Cell value={days} label="Days" />
+      <Cell value={hours} label="Hours" />
+      <Cell value={minutes} label="Minutes" />
+    </div>
+  );
+};
+
+// Formal three-column date display — DAY · MONTH · YEAR
+const FormalDate: React.FC = () => (
+  <div className="inline-flex items-center justify-center gap-6 md:gap-10 px-6 py-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-amber-200/60 shadow-sm">
+    <div className="text-center">
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-amber-700/80 mb-1">Saturday</p>
+      <p className="font-serif-display text-4xl md:text-5xl font-medium text-gray-800 leading-none">16</p>
+    </div>
+    <div className="h-12 w-px bg-amber-200" />
+    <div className="text-center">
+      <p className="font-serif-display italic text-xl md:text-2xl text-amber-700 leading-none mb-2">May</p>
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500">Two Thousand</p>
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500">Twenty-Six</p>
+    </div>
+    <div className="h-12 w-px bg-amber-200" />
+    <div className="text-center">
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-amber-700/80 mb-1">At</p>
+      <p className="font-serif-display text-2xl md:text-3xl font-medium text-gray-800 leading-none">10:00</p>
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500 mt-1">A.M.</p>
+    </div>
   </div>
 );
 
@@ -58,7 +131,7 @@ const PublicRSVPs: React.FC = () => {
         <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Users className="w-8 h-8 text-amber-500" />
         </div>
-        <p className="text-gray-600 text-lg">Be the first to RSVP!</p>
+        <p className="text-gray-600 text-lg font-serif-display italic">Be the first to RSVP</p>
         <p className="text-gray-400 text-sm mt-2">Join us in celebrating this special day</p>
       </div>
     );
@@ -71,17 +144,17 @@ const PublicRSVPs: React.FC = () => {
           <Users className="w-6 h-6 text-white" />
         </div>
         <div className="text-center">
-          <h3 className="text-2xl font-bold text-gray-800">
+          <h3 className="font-serif-display text-3xl font-medium text-gray-800">
             <AnimatedCounter target={stats.totalGuests} /> Guests
           </h3>
-          <p className="text-gray-500 text-sm">{stats.attending} families attending</p>
+          <p className="text-gray-500 text-sm tracking-wide">{stats.attending} families attending</p>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
         {attendingRSVPs.slice(0, 12).map((rsvp, index) => (
-          <div 
-            key={rsvp.id} 
+          <div
+            key={rsvp.id}
             className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-white rounded-2xl border border-amber-100 hover:shadow-md transition-all duration-300"
             style={{ animationDelay: `${index * 50}ms` }}
           >
@@ -109,10 +182,10 @@ const PublicRSVPs: React.FC = () => {
           </div>
         ))}
       </div>
-      
+
       {attendingRSVPs.length > 12 && (
-        <p className="text-center text-gray-400 text-sm pt-4">
-          +{attendingRSVPs.length - 12} more guests
+        <p className="text-center text-gray-400 text-sm pt-4 italic">
+          and {attendingRSVPs.length - 12} more
         </p>
       )}
     </div>
@@ -128,21 +201,21 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-amber-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#fbf6ec] via-[#fdfaf3] to-[#f1f5fa] relative overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Large gradient orbs */}
         <div className="absolute -top-20 -left-20 w-96 h-96 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse-slow"></div>
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-        
+
         {/* Floating crosses */}
         <FloatingCross delay={0} className="top-20 left-[10%]" />
         <FloatingCross delay={2} className="top-40 right-[15%]" />
         <FloatingCross delay={4} className="bottom-40 left-[20%]" />
         <FloatingCross delay={1} className="top-1/3 right-[8%]" />
         <FloatingCross delay={3} className="bottom-1/3 right-[25%]" />
-        
+
         {/* Sparkle effects */}
         <div className="absolute top-32 left-1/4 w-2 h-2 bg-amber-300 rounded-full animate-twinkle"></div>
         <div className="absolute top-48 right-1/3 w-1.5 h-1.5 bg-blue-300 rounded-full animate-twinkle" style={{ animationDelay: '0.5s' }}></div>
@@ -152,59 +225,85 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
 
       <div className="relative min-h-screen p-4">
         <div className="max-w-5xl mx-auto">
-          
+
           {/* Hero Section */}
-          <div className={`text-center pt-8 pb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <p className="text-sm md:text-base text-blue-600 font-medium tracking-[0.3em] uppercase mb-6 animate-fade-in">
-              Please Join Us For The
+          <div className={`text-center pt-12 pb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <p className="text-xs md:text-sm text-amber-700/80 font-medium tracking-[0.4em] uppercase mb-6 animate-fade-in">
+              Together with their family
             </p>
-            
+
+            <p className="font-serif-display italic text-2xl md:text-3xl text-gray-700 mb-2">
+              Michael <span className="text-amber-700">&amp;</span> Rachel
+            </p>
+            <p className="text-xs md:text-sm text-gray-500 tracking-[0.3em] uppercase mb-8">
+              joyfully invite you to celebrate the
+            </p>
+
             {/* Cross Icon with glow */}
             <div className="mb-8 relative">
               <div className="absolute inset-0 bg-amber-400 blur-3xl opacity-20 rounded-full"></div>
               <div className="relative flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-amber-400 mr-4 animate-pulse" />
-                <div className="p-4 bg-gradient-to-br from-amber-100 to-amber-50 rounded-full shadow-xl">
-                  <Cross className="w-12 h-12 text-amber-500" />
+                <Sparkles className="w-5 h-5 text-amber-400 mr-4 animate-pulse" />
+                <div className="p-5 bg-gradient-to-br from-amber-100 to-amber-50 rounded-full shadow-xl ring-1 ring-amber-200/60">
+                  <Cross className="w-12 h-12 text-amber-600" />
                 </div>
-                <Sparkles className="w-6 h-6 text-amber-400 ml-4 animate-pulse" style={{ animationDelay: '0.5s' }} />
+                <Sparkles className="w-5 h-5 text-amber-400 ml-4 animate-pulse" style={{ animationDelay: '0.5s' }} />
               </div>
             </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-amber-500 via-blue-600 to-amber-500 bg-clip-text text-transparent mb-4 drop-shadow-sm leading-tight">
-              Baptism
+
+            <h1 className="font-serif-display text-6xl md:text-8xl font-light tracking-wide text-gray-900 leading-none mb-2 engraved-text">
+              Holy Baptism
             </h1>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
-              of <span className="text-blue-600">Eric Martinez</span>
+            <p className="text-xs md:text-sm text-gray-500 tracking-[0.4em] uppercase mb-4">— of —</p>
+            <h2 className="font-script text-6xl md:text-8xl text-amber-700 leading-none mb-8 engraved-text">
+              Eric Martinez
             </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              With great joy, <span className="font-semibold text-amber-600">Michael & Rachel</span> invite you to celebrate the Baptism of their beloved son
+
+            <OrnamentDivider className="mb-8" />
+
+            <div className="flex justify-center mb-8">
+              <FormalDate />
+            </div>
+
+            <p className="font-serif-display italic text-base md:text-lg text-gray-600 max-w-xl mx-auto leading-relaxed">
+              "Behold, children are a heritage from the Lord."
+              <span className="block text-xs not-italic tracking-[0.25em] uppercase text-amber-700/80 mt-2">Psalm 127:3</span>
             </p>
           </div>
 
+          {/* Countdown */}
+          <div className={`mb-14 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <p className="text-center text-xs tracking-[0.4em] uppercase text-amber-700/80 mb-4">
+              Counting the days
+            </p>
+            <div className="bg-white/70 backdrop-blur-sm rounded-3xl py-6 px-4 shadow-md border border-amber-100 max-w-xl mx-auto">
+              <Countdown />
+            </div>
+          </div>
+
+          <OrnamentDivider className="mb-14" />
+
           {/* Event Cards */}
-          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            
+          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 mb-14 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+
             {/* Ceremony Card */}
-            <div className="group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-amber-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="p-4 bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
+            <div className="engraved-card group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-amber-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
+              <div className="text-center mb-5">
+                <div className="inline-flex p-4 bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform mb-4">
                   <Church className="w-7 h-7 text-white" />
                 </div>
-                <div>
-                  <p className="text-xs text-amber-600 font-bold uppercase tracking-wider">Religious Ceremony</p>
-                  <h3 className="text-xl font-bold text-gray-800">{ceremonyDetails.name}</h3>
-                </div>
+                <p className="text-[10px] text-amber-700 font-bold uppercase tracking-[0.3em]">The Ceremony</p>
+                <h3 className="font-serif-display text-2xl font-medium text-gray-800 mt-1">{ceremonyDetails.name}</h3>
               </div>
-              
-              <div className="space-y-4 pl-2">
+
+              <div className="space-y-3">
                 <div className="flex items-start gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-blue-100 rounded-lg">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
                     <MapPin className="w-5 h-5 text-blue-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-gray-800 font-medium">{ceremonyDetails.address}</p>
-                    <a 
+                    <a
                       href={ceremonyDetails.mapLink}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -215,16 +314,16 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
                     </a>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-amber-100 rounded-lg">
+                  <div className="p-2 bg-amber-100 rounded-lg flex-none">
                     <Calendar className="w-5 h-5 text-amber-600" />
                   </div>
-                  <p className="text-gray-800 font-bold">{ceremonyDetails.date}</p>
+                  <p className="text-gray-800 font-medium">{ceremonyDetails.date}</p>
                 </div>
-                
+
                 <div className="flex items-center gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-blue-100 rounded-lg">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
                     <Clock className="w-5 h-5 text-blue-600" />
                   </div>
                   <p className="text-gray-800 font-medium">{ceremonyDetails.time}</p>
@@ -233,25 +332,23 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Reception Card */}
-            <div className="group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-blue-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="p-4 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
+            <div className="engraved-card group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-blue-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
+              <div className="text-center mb-5">
+                <div className="inline-flex p-4 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform mb-4">
                   <Utensils className="w-7 h-7 text-white" />
                 </div>
-                <div>
-                  <p className="text-xs text-blue-600 font-bold uppercase tracking-wider">Reception</p>
-                  <h3 className="text-xl font-bold text-gray-800">{receptionDetails.name}</h3>
-                </div>
+                <p className="text-[10px] text-blue-700 font-bold uppercase tracking-[0.3em]">The Reception</p>
+                <h3 className="font-serif-display text-2xl font-medium text-gray-800 mt-1">{receptionDetails.name}</h3>
               </div>
-              
-              <div className="space-y-4 pl-2">
+
+              <div className="space-y-3">
                 <div className="flex items-start gap-4 group/item hover:bg-blue-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-blue-100 rounded-lg">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
                     <MapPin className="w-5 h-5 text-blue-600" />
                   </div>
                   <div className="flex-1">
                     <p className="text-gray-800 font-medium">{receptionDetails.address}</p>
-                    <a 
+                    <a
                       href={receptionDetails.mapLink}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -262,26 +359,28 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
                     </a>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4 group/item hover:bg-blue-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-blue-100 rounded-lg">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
                     <Clock className="w-5 h-5 text-blue-600" />
                   </div>
-                  <p className="text-gray-800 font-bold">{receptionDetails.time}</p>
+                  <p className="text-gray-800 font-medium">{receptionDetails.time}</p>
                 </div>
-                
+
                 <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
                   <p className="text-amber-800 font-medium flex items-center gap-2">
-                    <Utensils className="w-4 h-4" />
-                    Reception Menu: <span className="font-bold">Beef or Chicken</span>
+                    <Utensils className="w-4 h-4 flex-none" />
+                    Menu: <span className="font-bold">Beef or Chicken</span>
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
+          <OrnamentDivider className="mb-10" />
+
           {/* Public RSVPs Toggle */}
-          <div className={`mb-8 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`mb-10 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <button
               onClick={() => setShowRSVPs(!showRSVPs)}
               className="w-full bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-amber-100 flex items-center justify-between hover:bg-white hover:shadow-xl transition-all group"
@@ -291,7 +390,7 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div className="text-left">
-                  <span className="font-bold text-gray-800 text-lg block">See Who's Attending</span>
+                  <span className="font-serif-display font-medium text-gray-800 text-xl block">See Who's Attending</span>
                   <span className="text-gray-500 text-sm">View the guest list in real-time</span>
                 </div>
               </div>
@@ -299,41 +398,39 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
                 <ChevronDown className="w-6 h-6 text-amber-600" />
               </div>
             </button>
-            
+
             <div className={`overflow-hidden transition-all duration-500 ${showRSVPs ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
               <PublicRSVPs />
             </div>
           </div>
 
           {/* RSVP Section */}
-          <div className={`bg-gradient-to-br from-amber-400 via-amber-500 to-blue-500 rounded-3xl p-8 md:p-10 shadow-2xl text-center mb-8 relative overflow-hidden transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`bg-gradient-to-br from-amber-400 via-amber-500 to-blue-500 rounded-3xl p-10 md:p-14 shadow-2xl text-center mb-10 relative overflow-hidden transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Decorative elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
               <div className="absolute -top-20 -left-20 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
               <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-              <Cross className="absolute top-4 right-8 w-8 h-8 text-white/20" />
-              <Cross className="absolute bottom-4 left-8 w-6 h-6 text-white/20" />
+              <Cross className="absolute top-6 right-10 w-8 h-8 text-white/20" />
+              <Cross className="absolute bottom-6 left-10 w-6 h-6 text-white/20" />
             </div>
-            
+
             <div className="relative z-10">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-5 backdrop-blur-sm">
-                <UserCheck className="w-8 h-8 text-white" />
-              </div>
-              <p className="text-white/90 text-sm uppercase tracking-wider mb-2 font-medium">
-                RSVP
+              <p className="font-script text-4xl md:text-5xl text-white/95 mb-2">Kindly</p>
+              <p className="text-white/80 text-xs uppercase tracking-[0.5em] mb-6 font-medium">
+                Respond
               </p>
-              <h3 className="text-3xl md:text-4xl font-bold text-white mb-3">Kindly Respond</h3>
-              <div className="inline-block px-4 py-2 bg-white/20 rounded-full mb-6 backdrop-blur-sm">
-                <p className="text-white font-semibold">
+              <div className="inline-flex items-center justify-center gap-3 px-5 py-2 bg-white/15 rounded-full mb-8 backdrop-blur-sm border border-white/20">
+                <UserCheck className="w-4 h-4 text-white/90" />
+                <p className="text-white font-medium tracking-wide text-sm">
                   By {rsvpDeadline}
                 </p>
               </div>
-              <p className="text-white/90 mb-8 text-lg max-w-lg mx-auto">
-                Please let us know your preference for the reception: <span className="font-bold">Beef or Chicken</span>
+              <p className="font-serif-display italic text-white/95 mb-8 text-xl max-w-lg mx-auto">
+                Reception menu — please choose <span className="font-semibold not-italic">Beef</span> or <span className="font-semibold not-italic">Chicken</span> for each guest
               </p>
-              <button 
+              <button
                 onClick={() => onNavigate('rsvp')}
-                className="bg-white text-amber-600 hover:text-amber-700 font-bold py-4 px-12 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-300 text-lg hover:shadow-3xl"
+                className="bg-white text-amber-700 hover:text-amber-800 font-serif-display text-xl tracking-wide py-4 px-14 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-3xl border border-white/40"
               >
                 RSVP Now
               </button>
@@ -341,41 +438,32 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
           </div>
 
           {/* Contact */}
-          <div className={`text-center mb-8 transition-all duration-1000 delay-900 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`text-center mb-10 transition-all duration-1000 delay-900 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="inline-block bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-5 shadow-lg border border-amber-100">
-              <p className="text-gray-600 mb-2">Questions?</p>
-              <a 
+              <p className="text-xs tracking-[0.3em] uppercase text-amber-700/80 mb-2">Questions?</p>
+              <a
                 href={`mailto:${eventDetails.contact}`}
-                className="text-blue-600 hover:text-blue-700 font-semibold underline flex items-center justify-center gap-2 text-lg"
+                className="text-blue-600 hover:text-blue-700 font-medium underline flex items-center justify-center gap-2 text-base"
               >
-                <Mail className="w-5 h-5" />
+                <Mail className="w-4 h-4" />
                 {eventDetails.contact}
               </a>
             </div>
           </div>
 
           {/* Footer */}
-          <div className={`text-center pb-8 transition-all duration-1000 delay-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className="inline-block bg-white/70 backdrop-blur-sm rounded-3xl px-10 py-6 shadow-lg border border-amber-100">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <Heart className="w-5 h-5 text-pink-400 fill-pink-400" />
-                <p className="text-gray-600 font-medium text-lg">
-                  With love and blessings
-                </p>
-                <Heart className="w-5 h-5 text-pink-400 fill-pink-400" />
-              </div>
-              <p className="text-gray-500">
-                The Martinez Family
-              </p>
-              
-              {/* Discrete Admin Access */}
-              <button
-                onClick={handleAdminAccess}
-                className="mt-4 text-xs text-gray-400 hover:text-gray-600 transition-colors opacity-50 hover:opacity-100"
-              >
-                Admin
-              </button>
-            </div>
+          <div className={`text-center pb-10 transition-all duration-1000 delay-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <OrnamentDivider className="mb-6" />
+            <p className="font-script text-3xl text-amber-700 mb-1">With love and blessings</p>
+            <p className="text-xs tracking-[0.3em] uppercase text-gray-500">The Martinez Family</p>
+
+            {/* Discrete Admin Access */}
+            <button
+              onClick={handleAdminAccess}
+              className="mt-6 text-xs text-gray-400 hover:text-gray-600 transition-colors opacity-50 hover:opacity-100"
+            >
+              Admin
+            </button>
           </div>
         </div>
       </div>
@@ -414,15 +502,15 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
           width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
+          background: #f5efe1;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #d4a574;
+          background: #c9a14a;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #b8935f;
+          background: #a98538;
         }
       `}</style>
     </div>
