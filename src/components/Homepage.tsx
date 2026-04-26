@@ -146,12 +146,12 @@ const FormalDate: React.FC = () => (
         Saturday
       </p>
 
-      {/* The big day — 05 | 16 | 2026 in horizontal layout with rules */}
+      {/* The big day — May | 16 | 2026 in horizontal layout with rules */}
       <div className="flex items-end justify-center gap-3 md:gap-6 mb-5">
         {/* Month */}
         <div className="text-right flex-1 min-w-0">
-          <p className="font-serif-display text-3xl md:text-5xl font-medium text-gray-700 leading-none tabular-nums">
-            05
+          <p className="font-serif-display text-3xl md:text-5xl font-medium text-gray-700 leading-none">
+            May
           </p>
         </div>
 
@@ -176,7 +176,7 @@ const FormalDate: React.FC = () => (
       <div className="flex items-center justify-center gap-2 md:gap-3">
         <span className="h-px w-8 md:w-14 bg-amber-400/50" />
         <p className="font-serif-display text-xl md:text-2xl text-amber-800 tabular-nums whitespace-nowrap">
-          10:00 AM
+          10 AM
         </p>
         <span className="h-px w-8 md:w-14 bg-amber-400/50" />
       </div>
