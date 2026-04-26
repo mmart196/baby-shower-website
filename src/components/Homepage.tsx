@@ -98,24 +98,88 @@ const Countdown: React.FC = () => {
   );
 };
 
-// Formal three-column date display — DAY · MONTH · YEAR
+// Decorative SVG corner flourish — a small filigree
+const CornerFlourish: React.FC<{ className?: string; flip?: boolean }> = ({ className = '', flip = false }) => (
+  <svg
+    viewBox="0 0 64 64"
+    fill="none"
+    className={`${className} ${flip ? 'scale-x-[-1]' : ''}`}
+    aria-hidden="true"
+  >
+    <g stroke="currentColor" strokeWidth="1" strokeLinecap="round" fill="none">
+      <path d="M2 32 C 12 32, 18 26, 22 18 C 25 11, 32 8, 40 10" />
+      <path d="M2 32 C 14 30, 22 22, 26 14" opacity="0.6" />
+      <circle cx="40" cy="10" r="2.4" fill="currentColor" />
+      <circle cx="22" cy="18" r="1.6" fill="currentColor" opacity="0.7" />
+      <circle cx="6" cy="32" r="1.2" fill="currentColor" opacity="0.5" />
+      <path d="M30 18 C 33 16, 36 16, 38 18" opacity="0.5" />
+    </g>
+  </svg>
+);
+
+// Save-the-Date centerpiece — the visual focal point of the page
 const FormalDate: React.FC = () => (
-  <div className="inline-flex items-center justify-center gap-6 md:gap-10 px-6 py-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-amber-200/60 shadow-sm">
-    <div className="text-center">
-      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-amber-700/80 mb-1">Saturday</p>
-      <p className="font-serif-display text-4xl md:text-5xl font-medium text-gray-800 leading-none">16</p>
-    </div>
-    <div className="h-12 w-px bg-amber-200" />
-    <div className="text-center">
-      <p className="font-serif-display italic text-xl md:text-2xl text-amber-700 leading-none mb-2">May</p>
-      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500">Two Thousand</p>
-      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500">Twenty-Six</p>
-    </div>
-    <div className="h-12 w-px bg-amber-200" />
-    <div className="text-center">
-      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-amber-700/80 mb-1">At</p>
-      <p className="font-serif-display text-2xl md:text-3xl font-medium text-gray-800 leading-none">10:00</p>
-      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500 mt-1">A.M.</p>
+  <div className="relative inline-block w-full max-w-2xl">
+    {/* Outer parchment card with double gold border */}
+    <div
+      className="relative px-6 py-9 md:px-16 md:py-12 rounded-[2rem] shadow-2xl"
+      style={{
+        background:
+          'linear-gradient(135deg, #fffaf0 0%, #fdf6e3 50%, #faf0d7 100%)',
+        boxShadow:
+          '0 25px 50px -12px rgba(86, 64, 21, 0.25), inset 0 0 0 1px rgba(201, 161, 74, 0.5), inset 0 0 0 7px #fffaf0, inset 0 0 0 8px rgba(201, 161, 74, 0.35)',
+      }}
+    >
+      {/* Corner flourishes */}
+      <CornerFlourish className="absolute top-3 left-3 w-8 h-8 md:w-12 md:h-12 text-amber-600/70" />
+      <CornerFlourish className="absolute top-3 right-3 w-8 h-8 md:w-12 md:h-12 text-amber-600/70" flip />
+      <CornerFlourish className="absolute bottom-3 left-3 w-8 h-8 md:w-12 md:h-12 text-amber-600/70 rotate-[270deg]" />
+      <CornerFlourish className="absolute bottom-3 right-3 w-8 h-8 md:w-12 md:h-12 text-amber-600/70 rotate-180" />
+
+      {/* Eyebrow */}
+      <p className="text-center text-[10px] md:text-xs tracking-[0.5em] uppercase text-amber-700/80 mb-3 font-medium">
+        Save the Date
+      </p>
+
+      {/* Day of week — script */}
+      <p className="text-center font-script text-3xl md:text-4xl text-amber-700 leading-none mb-4">
+        Saturday
+      </p>
+
+      {/* The big day — May | 16 | MMXXVI in horizontal layout with rules */}
+      <div className="flex items-center justify-center gap-3 md:gap-6 mb-4">
+        {/* MAY */}
+        <div className="text-right flex-1 min-w-0">
+          <p className="font-serif-display text-base md:text-3xl tracking-[0.2em] md:tracking-[0.35em] text-gray-800 uppercase">
+            May
+          </p>
+        </div>
+
+        {/* 16 — massive centerpiece */}
+        <div className="relative flex-none px-2">
+          <div className="h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent absolute top-1 md:top-2 left-0 right-0" />
+          <p className="font-serif-display text-7xl md:text-9xl font-medium text-gray-900 leading-none tabular-nums engraved-text">
+            16
+          </p>
+          <div className="h-px bg-gradient-to-r from-transparent via-amber-500/60 to-transparent absolute bottom-1 md:bottom-2 left-0 right-0" />
+        </div>
+
+        {/* MMXXVI (year in roman numerals) */}
+        <div className="text-left flex-1 min-w-0">
+          <p className="font-serif-display text-base md:text-3xl tracking-[0.15em] md:tracking-[0.35em] text-gray-800 uppercase">
+            MMXXVI
+          </p>
+        </div>
+      </div>
+
+      {/* Time */}
+      <div className="flex items-center justify-center gap-2 md:gap-3">
+        <span className="h-px w-6 md:w-12 bg-amber-400/50" />
+        <p className="font-serif-display italic text-sm md:text-xl text-amber-800 whitespace-nowrap">
+          ten o'clock in the morning
+        </p>
+        <span className="h-px w-6 md:w-12 bg-amber-400/50" />
+      </div>
     </div>
   </div>
 );
