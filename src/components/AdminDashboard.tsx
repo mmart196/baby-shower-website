@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRSVP } from '../hooks/useRSVP';
-import { LogOut, Home, Users, Check, X, Trash2, Download } from 'lucide-react';
+import { LogOut, Home, Users, Check, X, Trash2, Download, Utensils } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -16,16 +16,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     return true;
   });
 
+  // Count meal preferences
+  const mealCounts = rsvps
+    .filter(r => r.attending)
+    .reduce((acc, rsvp) => {
+      const meal = rsvp.dietaryRestrictions?.replace('Meal: ', '') || 'Unknown';
+      acc[meal] = (acc[meal] || 0) + rsvp.guestCount;
+      return acc;
+    }, {} as Record<string, number>);
+
   const handleExport = () => {
     const csvContent = [
-      ['Name', 'Email', 'Phone', 'Attending', 'Guests', 'Dietary', 'Message', 'Submitted'].join(','),
+      ['Name', 'Email', 'Phone', 'Attending', 'Guests', 'Meal', 'Message', 'Submitted'].join(','),
       ...filteredRSVPs.map(rsvp => [
         `"${rsvp.name}"`,
         `"${rsvp.email || ''}"`,
         `"${rsvp.phone || ''}"`,
         rsvp.attending ? 'Yes' : 'No',
         rsvp.guestCount,
-        `"${rsvp.dietaryRestrictions || ''}"`,
+        `"${rsvp.dietaryRestrictions?.replace('Meal: ', '') || ''}"`,
         `"${rsvp.message || ''}"`,
         new Date(rsvp.submittedAt).toLocaleDateString()
       ].join(','))
@@ -41,7 +50,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-blue-50 p-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -71,22 +80,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-amber-100">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-2xl p-5 shadow-lg border border-amber-100">
             <p className="text-sm text-gray-600 mb-1">Total RSVPs</p>
-            <p className="text-3xl font-bold text-gray-800">{stats.total}</p>
+            <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
           </div>
-          <div className="bg-green-50 rounded-2xl p-6 shadow-lg border border-green-100">
+          <div className="bg-green-50 rounded-2xl p-5 shadow-lg border border-green-100">
             <p className="text-sm text-green-600 mb-1">Attending</p>
-            <p className="text-3xl font-bold text-green-700">{stats.attending}</p>
+            <p className="text-2xl font-bold text-green-700">{stats.attending}</p>
           </div>
-          <div className="bg-red-50 rounded-2xl p-6 shadow-lg border border-red-100">
-            <p className="text-sm text-red-600 mb-1">Not Attending</p>
-            <p className="text-3xl font-bold text-red-700">{stats.notAttending}</p>
-          </div>
-          <div className="bg-blue-50 rounded-2xl p-6 shadow-lg border border-blue-100">
+          <div className="bg-blue-50 rounded-2xl p-5 shadow-lg border border-blue-100">
             <p className="text-sm text-blue-600 mb-1">Total Guests</p>
-            <p className="text-3xl font-bold text-blue-700">{stats.totalGuests}</p>
+            <p className="text-2xl font-bold text-blue-700">{stats.totalGuests}</p>
+          </div>
+          <div className="bg-red-50 rounded-2xl p-5 shadow-lg border border-red-100">
+            <p className="text-sm text-red-600 mb-1">Declined</p>
+            <p className="text-2xl font-bold text-red-700">{stats.notAttending}</p>
+          </div>
+        </div>
+
+        {/* Meal Counts */}
+        <div className="bg-white rounded-2xl shadow-lg p-4 mb-6 border border-amber-100">
+          <div className="flex items-center gap-2 mb-3">
+            <Utensils className="w-5 h-5 text-amber-500" />
+            <h3 className="font-bold text-gray-800">Meal Preferences</h3>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Object.entries(mealCounts).map(([meal, count]) => (
+              <div key={meal} className={`rounded-xl p-3 text-center ${
+                meal === 'Beef' ? 'bg-red-50 border border-red-100' :
+                meal === 'Chicken' ? 'bg-amber-50 border border-amber-100' :
+                'bg-gray-50 border border-gray-100'
+              }`}>
+                <p className={`text-sm font-medium ${
+                  meal === 'Beef' ? 'text-red-700' :
+                  meal === 'Chicken' ? 'text-amber-700' :
+                  'text-gray-700'
+                }`}>{meal}</p>
+                <p className={`text-xl font-bold ${
+                  meal === 'Beef' ? 'text-red-800' :
+                  meal === 'Chicken' ? 'text-amber-800' :
+                  'text-gray-800'
+                }`}>{count}</p>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -122,7 +159,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                Not Attending
+                Declined
               </button>
             </div>
             <button
@@ -141,13 +178,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Name</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Contact</th>
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-gray-600">Guests</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Dietary</th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Message</th>
-                  <th className="text-center px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-gray-600">Name</th>
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-gray-600">Contact</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-gray-600">Status</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-gray-600">Guests</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-gray-600">Meal</th>
+                  <th className="text-left px-4 py-3 text-sm font-semibold text-gray-600">Message</th>
+                  <th className="text-center px-4 py-3 text-sm font-semibold text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -160,43 +197,51 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 ) : (
                   filteredRSVPs.map((rsvp) => (
                     <tr key={rsvp.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <p className="font-medium text-gray-800">{rsvp.name}</p>
                         <p className="text-xs text-gray-500">
                           {new Date(rsvp.submittedAt).toLocaleDateString()}
                         </p>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         {rsvp.email && <p className="text-sm text-gray-600">{rsvp.email}</p>}
                         {rsvp.phone && <p className="text-sm text-gray-600">{rsvp.phone}</p>}
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-3 text-center">
                         {rsvp.attending ? (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
                             <Check className="w-3 h-3" />
                             Yes
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
                             <X className="w-3 h-3" />
                             No
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-3 text-center">
                         <span className="font-medium text-gray-800">{rsvp.guestCount}</span>
                       </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-gray-600 max-w-xs truncate">
-                          {rsvp.dietaryRestrictions || '-'}
-                        </p>
+                      <td className="px-4 py-3 text-center">
+                        {rsvp.dietaryRestrictions ? (
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs ${
+                            rsvp.dietaryRestrictions.includes('Beef') 
+                              ? 'bg-red-100 text-red-700' 
+                              : 'bg-amber-100 text-amber-700'
+                          }`}>
+                            {rsvp.dietaryRestrictions.replace('Meal: ', '')}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <p className="text-sm text-gray-600 max-w-xs truncate">
                           {rsvp.message || '-'}
                         </p>
                       </td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => {
                             if (confirm('Delete this RSVP?')) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Check, X, Users, MessageCircle, Utensils, Mail, Phone, User, Church, Cross } from 'lucide-react';
+import { ArrowLeft, Check, X, Users, MessageCircle, Utensils, Mail, Phone, User, Church, Cross, MapPin, Clock } from 'lucide-react';
 import { RSVP } from '../types';
 
 interface RSVPFormProps {
@@ -14,7 +14,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
     phone: '',
     attending: true,
     guestCount: 1,
-    dietaryRestrictions: '',
+    mealPreference: 'beef' as 'beef' | 'chicken',
     message: ''
   });
   
@@ -39,7 +39,10 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
     setError(null);
 
     try {
-      await onSubmit(formData);
+      await onSubmit({
+        ...formData,
+        dietaryRestrictions: `Meal: ${formData.mealPreference}`
+      });
       setSubmitted(true);
     } catch (err) {
       setError('Failed to submit RSVP. Please try again.');
@@ -62,14 +65,19 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
               <Cross className="w-8 h-8 text-amber-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">RSVP Confirmed!</h2>
-            <p className="text-gray-600 mb-6">
-              Thank you for your response, {formData.name}! We're {formData.attending ? 'blessed to have you join us' : 'sorry you can\'t make it'} for this special sacrament.
+            <p className="text-gray-600 mb-4">
+              Thank you, {formData.name}! We're {formData.attending ? 'blessed to have you join us' : 'sorry you can\'t make it'} for Eric's baptism.
             </p>
             {formData.attending && (
-              <p className="text-sm text-gray-500 mb-6">
-                We'll see you on May 17th! God bless ✝️
-              </p>
+              <div className="bg-amber-50 rounded-xl p-4 mb-4">
+                <p className="text-amber-800 font-medium">
+                  Meal Selection: {formData.mealPreference === 'beef' ? 'Beef' : 'Chicken'}
+                </p>
+              </div>
             )}
+            <p className="text-sm text-gray-500 mb-6">
+              Saturday, May 16, 2026 • We'll see you there!
+            </p>
             <button
               onClick={onBack}
               className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200"
@@ -107,14 +115,14 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
             <div className="flex items-center justify-center gap-2 mb-2">
               <Church className="w-6 h-6 text-amber-500" />
               <h2 className="text-2xl font-semibold text-gray-800">
-                Baptism of Baby Martinez
+                Baptism of Eric Martinez
               </h2>
             </div>
             <p className="text-gray-600">
-              May 17th, 2025 • 11:00 AM EST
+              Saturday, May 16, 2026
             </p>
-            <p className="text-gray-600">
-              St. John the Baptist Catholic Church
+            <p className="text-amber-600 font-medium mt-1">
+              Kindly respond by May 7, 2026
             </p>
           </div>
 
@@ -198,42 +206,61 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
               </div>
             </div>
 
-            {/* Guest Count (only if attending) */}
+            {/* Guest Count & Meal Preference (only if attending) */}
             {formData.attending && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Users className="w-4 h-4 inline mr-1" />
-                  Number of Guests (including yourself) *
-                </label>
-                <select
-                  value={formData.guestCount}
-                  onChange={(e) => handleInputChange('guestCount', parseInt(e.target.value))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                    <option key={num} value={num}>
-                      {num} {num === 1 ? 'person' : 'people'}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <Users className="w-4 h-4 inline mr-1" />
+                    Number of Guests (including yourself) *
+                  </label>
+                  <select
+                    value={formData.guestCount}
+                    onChange={(e) => handleInputChange('guestCount', parseInt(e.target.value))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                      <option key={num} value={num}>
+                        {num} {num === 1 ? 'person' : 'people'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            {/* Dietary Restrictions (only if attending) */}
-            {formData.attending && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Utensils className="w-4 h-4 inline mr-1" />
-                  Dietary Restrictions or Allergies
-                </label>
-                <input
-                  type="text"
-                  value={formData.dietaryRestrictions}
-                  onChange={(e) => handleInputChange('dietaryRestrictions', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                  placeholder="Let us know about any dietary needs"
-                />
-              </div>
+                {/* Meal Preference */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    <Utensils className="w-4 h-4 inline mr-1" />
+                    Reception Meal Preference *
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('mealPreference', 'beef')}
+                      className={`flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-medium transition-all duration-200 border-2 ${
+                        formData.mealPreference === 'beef'
+                          ? 'bg-red-50 border-red-400 text-red-700 shadow-lg'
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-red-200'
+                      }`}
+                    >
+                      <span className="text-2xl">🥩</span>
+                      Beef
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('mealPreference', 'chicken')}
+                      className={`flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-medium transition-all duration-200 border-2 ${
+                        formData.mealPreference === 'chicken'
+                          ? 'bg-amber-50 border-amber-400 text-amber-700 shadow-lg'
+                          : 'bg-white border-gray-200 text-gray-600 hover:border-amber-200'
+                      }`}
+                    >
+                      <span className="text-2xl">🍗</span>
+                      Chicken
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
 
             {/* Message */}
@@ -247,7 +274,7 @@ export const RSVPForm: React.FC<RSVPFormProps> = ({ onBack, onSubmit }) => {
                 onChange={(e) => handleInputChange('message', e.target.value)}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none"
-                placeholder="Share your blessings and well wishes!"
+                placeholder="Share your blessings and well wishes for Eric!"
               />
             </div>
 

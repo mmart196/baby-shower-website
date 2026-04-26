@@ -1,17 +1,31 @@
-import { EventDetails, WishlistItem, PaymentOption } from '../types';
+import { EventDetails } from '../types';
 
 export const eventDetails: EventDetails = {
-  couple: 'Baby Martinez',
-  date: 'May 17th, 2025',
-  time: '11:00 AM EST',
-  location: 'St. John the Baptist Catholic Church, 123 Main St, Silver Spring, MD',
+  couple: 'Eric Martinez',
+  date: 'Saturday, May 16, 2026',
+  time: '10:00 AM',
+  location: 'Prince of Peace Catholic Church, 12800 NW 6th St, Miami, FL 33182',
   contact: 'Michael13414@gmail.com'
 };
 
-// Baptism venue link (Google Maps or church website)
-export const venueLink = 'https://maps.google.com/?q=St+John+the+Baptist+Church+Silver+Spring+MD';
+export const ceremonyDetails = {
+  name: 'Prince of Peace Catholic Church',
+  address: '12800 NW 6th St, Miami, FL 33182',
+  time: '10:00 AM',
+  mapLink: 'https://maps.google.com/?q=Prince+of+Peace+Catholic+Church+12800+NW+6th+St+Miami+FL'
+};
 
-// Stubs for backward compatibility (not used for baptism site)
+export const receptionDetails = {
+  name: 'Royal Ballrooms Event Roma',
+  address: '1405 SW 107th Ave #212C, Miami, FL 33174',
+  time: '11:30 AM',
+  mapLink: 'https://maps.google.com/?q=Royal+Ballrooms+Event+Roma+1405+SW+107th+Ave+Miami+FL'
+};
+
+export const rsvpDeadline = 'May 7, 2026';
+
+// Stubs for backward compatibility
+export const venueLink = ceremonyDetails.mapLink;
 export const amazonWishlistUrl = '';
-export const paymentOptions: PaymentOption[] = [];
-export const initialWishlistItems: WishlistItem[] = [];
+export const paymentOptions: any[] = [];
+export const initialWishlistItems: any[] = [];
