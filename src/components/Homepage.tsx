@@ -1,9 +1,10 @@
-import React from 'react';
-import { eventDetails, amazonWishlistUrl } from '../data/initialData';
-import { Calendar, Clock, MapPin, Mail, Gift, Heart, Settings, ExternalLink, UserCheck, Sparkles, Baby } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { eventDetails, ceremonyDetails, receptionDetails, rsvpDeadline } from '../data/initialData';
+import { Calendar, Clock, MapPin, Mail, UserCheck, Church, Cross, Sparkles, ExternalLink, Users, Utensils, Heart, ChevronDown } from 'lucide-react';
+import { useRSVP } from '../hooks/useRSVP';
 
 interface HomepageProps {
-  onNavigate: (section: 'wishlist' | 'gifts' | 'rsvp') => void;
+  onNavigate: (section: 'rsvp') => void;
 }
 
 const handleAdminAccess = () => {
@@ -11,238 +12,507 @@ const handleAdminAccess = () => {
   window.location.reload();
 };
 
-export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
+const EVENT_DATE = new Date('2026-05-16T10:00:00-04:00');
+
+// Animated Counter Component
+const AnimatedCounter: React.FC<{ target: number; duration?: number }> = ({ target, duration = 2000 }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number;
+    let animationFrame: number;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * target));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [target, duration]);
+
+  return <span>{count}</span>;
+};
+
+// Floating Cross Animation
+const FloatingCross: React.FC<{ delay?: number; className?: string }> = ({ delay = 0, className = '' }) => (
+  <div
+    className={`absolute opacity-20 animate-float ${className}`}
+    style={{ animationDelay: `${delay}s` }}
+  >
+    <Cross className="w-8 h-8 text-amber-400" />
+  </div>
+);
+
+// Ornamental section divider — gold rules around a small cross
+const OrnamentDivider: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`ornament-divider ${className}`}>
+    <Cross className="w-4 h-4 flex-none" />
+  </div>
+);
+
+// Live countdown to the celebration
+const Countdown: React.FC = () => {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000 * 60); // tick once a minute
+    return () => clearInterval(id);
+  }, []);
+
+  const diff = Math.max(0, EVENT_DATE.getTime() - now.getTime());
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+
+  if (diff === 0) {
+    return (
+      <p className="font-serif-display italic text-xl text-amber-700 text-center">
+        Today is the day — we're so glad you're here.
+      </p>
+    );
+  }
+
+  const Cell: React.FC<{ value: number; label: string }> = ({ value, label }) => (
+    <div className="flex flex-col items-center px-5 md:px-7">
+      <span className="font-serif-display text-4xl md:text-5xl font-medium text-gray-800 tabular-nums">
+        {String(value).padStart(2, '0')}
+      </span>
+      <span className="text-[10px] md:text-xs tracking-[0.25em] uppercase text-amber-700/80 mt-1">
+        {label}
+      </span>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 relative overflow-hidden">
-      {/* Background Decorations */}
+    <div className="flex items-center justify-center divide-x divide-amber-200">
+      <Cell value={days} label="Days" />
+      <Cell value={hours} label="Hours" />
+      <Cell value={minutes} label="Minutes" />
+    </div>
+  );
+};
+
+// Formal three-column date display — DAY · MONTH · YEAR
+const FormalDate: React.FC = () => (
+  <div className="inline-flex items-center justify-center gap-6 md:gap-10 px-6 py-4 bg-white/70 backdrop-blur-sm rounded-2xl border border-amber-200/60 shadow-sm">
+    <div className="text-center">
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-amber-700/80 mb-1">Saturday</p>
+      <p className="font-serif-display text-4xl md:text-5xl font-medium text-gray-800 leading-none">16</p>
+    </div>
+    <div className="h-12 w-px bg-amber-200" />
+    <div className="text-center">
+      <p className="font-serif-display italic text-xl md:text-2xl text-amber-700 leading-none mb-2">May</p>
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500">Two Thousand</p>
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500">Twenty-Six</p>
+    </div>
+    <div className="h-12 w-px bg-amber-200" />
+    <div className="text-center">
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-amber-700/80 mb-1">At</p>
+      <p className="font-serif-display text-2xl md:text-3xl font-medium text-gray-800 leading-none">10:00</p>
+      <p className="text-[10px] md:text-xs tracking-[0.3em] uppercase text-gray-500 mt-1">A.M.</p>
+    </div>
+  </div>
+);
+
+// Public RSVPs View Component
+const PublicRSVPs: React.FC = () => {
+  const { rsvps, stats } = useRSVP();
+  const attendingRSVPs = rsvps.filter(r => r.attending);
+
+  if (attendingRSVPs.length === 0) {
+    return (
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 border border-amber-100 text-center shadow-xl">
+        <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Users className="w-8 h-8 text-amber-500" />
+        </div>
+        <p className="text-gray-600 text-lg font-serif-display italic">Be the first to RSVP</p>
+        <p className="text-gray-400 text-sm mt-2">Join us in celebrating this special day</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-amber-100">
+      <div className="flex items-center justify-center gap-3 mb-6">
+        <div className="p-3 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full shadow-lg">
+          <Users className="w-6 h-6 text-white" />
+        </div>
+        <div className="text-center">
+          <h3 className="font-serif-display text-3xl font-medium text-gray-800">
+            <AnimatedCounter target={stats.totalGuests} /> Guests
+          </h3>
+          <p className="text-gray-500 text-sm tracking-wide">{stats.attending} families attending</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
+        {attendingRSVPs.slice(0, 12).map((rsvp, index) => (
+          <div
+            key={rsvp.id}
+            className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-white rounded-2xl border border-amber-100 hover:shadow-md transition-all duration-300"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center shadow-md">
+              <span className="text-white font-bold text-sm">
+                {rsvp.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="font-semibold text-gray-800 block truncate">{rsvp.name}</span>
+              <span className="text-xs text-gray-500">
+                {rsvp.guestCount} {rsvp.guestCount === 1 ? 'guest' : 'guests'}
+              </span>
+            </div>
+            {rsvp.dietaryRestrictions && (
+              <div className="flex gap-1">
+                {rsvp.dietaryRestrictions.includes('Beef') && (
+                  <span className="text-lg" title="Beef">🥩</span>
+                )}
+                {rsvp.dietaryRestrictions.includes('Chicken') && (
+                  <span className="text-lg" title="Chicken">🍗</span>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {attendingRSVPs.length > 12 && (
+        <p className="text-center text-gray-400 text-sm pt-4 italic">
+          and {attendingRSVPs.length - 12} more
+        </p>
+      )}
+    </div>
+  );
+};
+
+export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
+  const [showRSVPs, setShowRSVPs] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#fbf6ec] via-[#fdfaf3] to-[#f1f5fa] relative overflow-hidden">
+      {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-4 -left-4 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute -top-4 -right-4 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-        <div className="absolute top-1/3 left-1/4 w-4 h-4 bg-pink-300 rounded-full opacity-60"></div>
-        <div className="absolute top-1/4 right-1/3 w-2 h-2 bg-purple-300 rounded-full opacity-40"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-3 h-3 bg-blue-300 rounded-full opacity-50"></div>
-        <div className="absolute top-2/3 left-1/3 w-2 h-2 bg-pink-400 rounded-full opacity-30"></div>
+        {/* Large gradient orbs */}
+        <div className="absolute -top-20 -left-20 w-96 h-96 bg-amber-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse-slow"></div>
+        <div className="absolute -top-20 -right-20 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+
+        {/* Floating crosses */}
+        <FloatingCross delay={0} className="top-20 left-[10%]" />
+        <FloatingCross delay={2} className="top-40 right-[15%]" />
+        <FloatingCross delay={4} className="bottom-40 left-[20%]" />
+        <FloatingCross delay={1} className="top-1/3 right-[8%]" />
+        <FloatingCross delay={3} className="bottom-1/3 right-[25%]" />
+
+        {/* Sparkle effects */}
+        <div className="absolute top-32 left-1/4 w-2 h-2 bg-amber-300 rounded-full animate-twinkle"></div>
+        <div className="absolute top-48 right-1/3 w-1.5 h-1.5 bg-blue-300 rounded-full animate-twinkle" style={{ animationDelay: '0.5s' }}></div>
+        <div className="absolute bottom-48 left-1/3 w-2 h-2 bg-amber-400 rounded-full animate-twinkle" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 right-1/4 w-1 h-1 bg-blue-400 rounded-full animate-twinkle" style={{ animationDelay: '1.5s' }}></div>
       </div>
 
       <div className="relative min-h-screen p-4">
-        <div className="max-w-6xl mx-auto">
-          
-          {/* Hero Section - Title & Video */}
-          <div className="text-center mb-16 pt-8">
-            {/* Main Title */}
-            <div className="mb-12">
-              <div className="flex items-center justify-center mb-6">
-                <Sparkles className="w-8 h-8 text-pink-400 mr-4 animate-pulse" />
-                <Baby className="w-20 h-20 text-pink-500 drop-shadow-lg" />
-                <Sparkles className="w-8 h-8 text-pink-400 ml-4 animate-pulse" />
-              </div>
-              <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-4 drop-shadow-sm leading-tight">
-                {eventDetails.couple}'s
-              </h1>
-              <h2 className="text-3xl md:text-4xl font-bold text-purple-700 tracking-wide">
-                Baby Shower
-              </h2>
-            </div>
+        <div className="max-w-5xl mx-auto">
 
-            {/* Ultrasound Video - Centered and Prominent */}
-            <div className="max-w-lg mx-auto mb-12">
-              <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-6 border border-white/50">
-                <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-center gap-3">
-                  <Heart className="w-6 h-6 text-pink-500 animate-pulse" />
-                  Meet Our Little One
-                  <Heart className="w-6 h-6 text-pink-500 animate-pulse" />
-                </h3>
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-pink-100 to-purple-100 p-4">
-                  <video
-                    className="w-full h-auto rounded-xl shadow-lg"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    controls
-                    preload="auto"
-                  >
-                    <source src="./babyultrasound.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  <div className="absolute inset-0 rounded-xl ring-4 ring-pink-300/60 pointer-events-none"></div>
+          {/* Hero Section */}
+          <div className={`text-center pt-12 pb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <p className="text-xs md:text-sm text-amber-700/80 font-medium tracking-[0.4em] uppercase mb-6 animate-fade-in">
+              Together with their family
+            </p>
+
+            <p className="font-serif-display italic text-2xl md:text-3xl text-gray-700 mb-2">
+              Michael <span className="text-amber-700">&amp;</span> Rachel
+            </p>
+            <p className="text-xs md:text-sm text-gray-500 tracking-[0.3em] uppercase mb-8">
+              joyfully invite you to celebrate the
+            </p>
+
+            {/* Cross Icon with glow */}
+            <div className="mb-8 relative">
+              <div className="absolute inset-0 bg-amber-400 blur-3xl opacity-20 rounded-full"></div>
+              <div className="relative flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-amber-400 mr-4 animate-pulse" />
+                <div className="p-5 bg-gradient-to-br from-amber-100 to-amber-50 rounded-full shadow-xl ring-1 ring-amber-200/60">
+                  <Cross className="w-12 h-12 text-amber-600" />
                 </div>
-                <p className="text-center text-gray-600 mt-4 italic">
-                  Can't wait to meet you, little one! 💕
-                </p>
+                <Sparkles className="w-5 h-5 text-amber-400 ml-4 animate-pulse" style={{ animationDelay: '0.5s' }} />
               </div>
             </div>
 
+            <h1 className="font-serif-display text-6xl md:text-8xl font-light tracking-wide text-gray-900 leading-none mb-2 engraved-text">
+              Holy Baptism
+            </h1>
+            <p className="text-xs md:text-sm text-gray-500 tracking-[0.4em] uppercase mb-4">— of —</p>
+            <h2 className="font-script text-6xl md:text-8xl text-amber-700 leading-none mb-8 engraved-text">
+              Eric Martinez
+            </h2>
+
+            <OrnamentDivider className="mb-8" />
+
+            <div className="flex justify-center mb-8">
+              <FormalDate />
+            </div>
+
+            <p className="font-serif-display italic text-base md:text-lg text-gray-600 max-w-xl mx-auto leading-relaxed">
+              "Behold, children are a heritage from the Lord."
+              <span className="block text-xs not-italic tracking-[0.25em] uppercase text-amber-700/80 mt-2">Psalm 127:3</span>
+            </p>
           </div>
 
-          {/* Event Details Card */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-10 mb-12 border border-white/50">
-            <h3 className="text-2xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center gap-3">
-              <Heart className="w-6 h-6 text-pink-500" />
-              Celebration Details
-              <Heart className="w-6 h-6 text-pink-500" />
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-center gap-4 p-4 bg-pink-50 rounded-2xl">
-                <div className="p-3 bg-pink-500 rounded-full">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">Date</p>
-                  <p className="text-lg text-gray-800 font-bold">{eventDetails.date}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-purple-50 rounded-2xl">
-                <div className="p-3 bg-purple-500 rounded-full">
-                  <Clock className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">Time</p>
-                  <p className="text-lg text-gray-800 font-bold">{eventDetails.time}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-2xl md:col-span-2">
-                <div className="p-3 bg-blue-500 rounded-full">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">Location</p>
-                  <p className="text-lg text-gray-800 font-bold">{eventDetails.location}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl md:col-span-2">
-                <div className="p-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full">
-                  <Mail className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">Questions?</p>
-                  <a 
-                    href={`mailto:${eventDetails.contact}`}
-                    className="text-sm text-purple-600 hover:text-purple-700 font-medium underline decoration-1 decoration-purple-300 hover:decoration-purple-500 transition-colors"
-                  >
-                    {eventDetails.contact}
-                  </a>
-                </div>
-              </div>
+          {/* Countdown */}
+          <div className={`mb-14 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <p className="text-center text-xs tracking-[0.4em] uppercase text-amber-700/80 mb-4">
+              Counting the days
+            </p>
+            <div className="bg-white/70 backdrop-blur-sm rounded-3xl py-6 px-4 shadow-md border border-amber-100 max-w-xl mx-auto">
+              <Countdown />
             </div>
           </div>
 
-          {/* Welcome Message */}
-          <div className="text-center mb-16">
-            <div className="max-w-3xl mx-auto">
-              <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/50">
-                <p className="text-xl md:text-2xl text-gray-700 font-medium leading-relaxed mb-4">
-                  Your presence is the best gift, but if you'd like to gift us or bring something, we've created a registry on Amazon.
-                </p>
-                <p className="text-xl text-purple-600 font-bold">
-                  Please RSVP ✨
-                </p>
-              </div>
-            </div>
-          </div>
+          <OrnamentDivider className="mb-14" />
 
-          {/* Action Sections Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-            
-            {/* RSVP Section - Left Column */}
-            <div className="order-1">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl p-8 shadow-2xl text-center h-full flex flex-col justify-center">
-                <div className="flex items-center justify-center mb-6">
-                  <UserCheck className="w-12 h-12 text-white" />
+          {/* Event Cards */}
+          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 mb-14 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+
+            {/* Ceremony Card */}
+            <div className="engraved-card group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-amber-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
+              <div className="text-center mb-5">
+                <div className="inline-flex p-4 bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform mb-4">
+                  <Church className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-3xl font-bold text-white mb-4">Please RSVP</h3>
-                <p className="text-blue-100 text-lg mb-8 leading-relaxed">
-                  Let us know if you'll be joining our celebration!
-                </p>
-                <button 
-                  onClick={() => onNavigate('rsvp')}
-                  className="bg-white text-blue-600 hover:bg-blue-50 font-bold py-4 px-8 rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-300 text-lg mx-auto"
-                >
-                  RSVP Now
-                </button>
+                <p className="text-[10px] text-amber-700 font-bold uppercase tracking-[0.3em]">The Ceremony</p>
+                <h3 className="font-serif-display text-2xl font-medium text-gray-800 mt-1">{ceremonyDetails.name}</h3>
               </div>
-            </div>
 
-            {/* Cash Gift Section - Right Column (More Prominent) */}
-            <div className="order-2">
-              <div className="bg-gradient-to-br from-pink-500 via-purple-500 to-pink-600 rounded-3xl p-8 shadow-2xl text-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                <div className="relative z-10">
-                  <div className="flex items-center justify-center mb-6">
-                    <Sparkles className="w-8 h-8 text-yellow-300 mr-3 animate-pulse" />
-                    <Heart className="w-12 h-12 text-white" />
-                    <Sparkles className="w-8 h-8 text-yellow-300 ml-3 animate-pulse" />
+              <div className="space-y-3">
+                <div className="flex items-start gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
+                    <MapPin className="w-5 h-5 text-blue-600" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-4">💝 Preferred Gift</h3>
-                  <p className="text-pink-100 text-lg mb-8 leading-relaxed">
-                    A cash contribution helps us prepare for our little one's future!
+                  <div className="flex-1">
+                    <p className="text-gray-800 font-medium">{ceremonyDetails.address}</p>
+                    <a
+                      href={ceremonyDetails.mapLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium mt-1 hover:underline"
+                    >
+                      Get Directions
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
+                  <div className="p-2 bg-amber-100 rounded-lg flex-none">
+                    <Calendar className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <p className="text-gray-800 font-medium">{ceremonyDetails.date}</p>
+                </div>
+
+                <div className="flex items-center gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <p className="text-gray-800 font-medium">{ceremonyDetails.time}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Reception Card */}
+            <div className="engraved-card group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-blue-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
+              <div className="text-center mb-5">
+                <div className="inline-flex p-4 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform mb-4">
+                  <Utensils className="w-7 h-7 text-white" />
+                </div>
+                <p className="text-[10px] text-blue-700 font-bold uppercase tracking-[0.3em]">The Reception</p>
+                <h3 className="font-serif-display text-2xl font-medium text-gray-800 mt-1">{receptionDetails.name}</h3>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-start gap-4 group/item hover:bg-blue-50 p-3 rounded-xl transition-colors">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
+                    <MapPin className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-gray-800 font-medium">{receptionDetails.address}</p>
+                    <a
+                      href={receptionDetails.mapLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium mt-1 hover:underline"
+                    >
+                      Get Directions
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 group/item hover:bg-blue-50 p-3 rounded-xl transition-colors">
+                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <p className="text-gray-800 font-medium">{receptionDetails.time}</p>
+                </div>
+
+                <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
+                  <p className="text-amber-800 font-medium flex items-center gap-2">
+                    <Utensils className="w-4 h-4 flex-none" />
+                    Menu: <span className="font-bold">Beef or Chicken</span>
                   </p>
-                  <button 
-                    onClick={() => onNavigate('gifts')}
-                    className="bg-white text-purple-600 hover:bg-purple-50 font-bold py-5 px-10 rounded-2xl shadow-2xl transform hover:scale-110 transition-all duration-300 text-xl border-2 border-white/30"
-                  >
-                    <Heart className="w-6 h-6 inline mr-3" />
-                    Give Cash Gift
-                  </button>
-                  <p className="text-pink-100 text-sm mt-4 italic">Quick & exactly what we need! ✨</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Amazon Wishlist - Full Width Secondary Option */}
-          <div className="mb-16">
-            <div className="bg-gradient-to-br from-orange-100 via-yellow-50 to-orange-100 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-orange-200/50 text-center">
-              <h4 className="text-2xl font-bold text-orange-800 mb-4 flex items-center justify-center gap-3">
-                <Gift className="w-6 h-6 text-orange-600" />
-                Or Browse Our Amazon Registry
-                <Gift className="w-6 h-6 text-orange-600" />
-              </h4>
-              <p className="text-orange-700 mb-6 text-lg">If you prefer to choose a specific item, we've curated a list on Amazon</p>
-              <a
-                href={amazonWishlistUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-              >
-                <Gift className="w-6 h-6" />
-                Shop Our Amazon Wishlist
-                <ExternalLink className="w-5 h-5" />
-              </a>
-              <p className="text-orange-600 text-sm mt-4 italic">
-                💝 Please include a gift receipt in case we need to exchange
+          <OrnamentDivider className="mb-10" />
+
+          {/* Public RSVPs Toggle */}
+          <div className={`mb-10 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <button
+              onClick={() => setShowRSVPs(!showRSVPs)}
+              className="w-full bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-amber-100 flex items-center justify-between hover:bg-white hover:shadow-xl transition-all group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-amber-400 to-amber-500 rounded-xl shadow-md group-hover:scale-110 transition-transform">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <span className="font-serif-display font-medium text-gray-800 text-xl block">See Who's Attending</span>
+                  <span className="text-gray-500 text-sm">View the guest list in real-time</span>
+                </div>
+              </div>
+              <div className={`p-2 bg-amber-100 rounded-full transition-transform ${showRSVPs ? 'rotate-180' : ''}`}>
+                <ChevronDown className="w-6 h-6 text-amber-600" />
+              </div>
+            </button>
+
+            <div className={`overflow-hidden transition-all duration-500 ${showRSVPs ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+              <PublicRSVPs />
+            </div>
+          </div>
+
+          {/* RSVP Section */}
+          <div className={`bg-gradient-to-br from-amber-400 via-amber-500 to-blue-500 rounded-3xl p-10 md:p-14 shadow-2xl text-center mb-10 relative overflow-hidden transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            {/* Decorative elements */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+              <div className="absolute -top-20 -left-20 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+              <Cross className="absolute top-6 right-10 w-8 h-8 text-white/20" />
+              <Cross className="absolute bottom-6 left-10 w-6 h-6 text-white/20" />
+            </div>
+
+            <div className="relative z-10">
+              <p className="font-script text-4xl md:text-5xl text-white/95 mb-2">Kindly</p>
+              <p className="text-white/80 text-xs uppercase tracking-[0.5em] mb-6 font-medium">
+                Respond
               </p>
+              <div className="inline-flex items-center justify-center gap-3 px-5 py-2 bg-white/15 rounded-full mb-8 backdrop-blur-sm border border-white/20">
+                <UserCheck className="w-4 h-4 text-white/90" />
+                <p className="text-white font-medium tracking-wide text-sm">
+                  By {rsvpDeadline}
+                </p>
+              </div>
+              <p className="font-serif-display italic text-white/95 mb-8 text-xl max-w-lg mx-auto">
+                Reception menu — please choose <span className="font-semibold not-italic">Beef</span> or <span className="font-semibold not-italic">Chicken</span> for each guest
+              </p>
+              <button
+                onClick={() => onNavigate('rsvp')}
+                className="bg-white text-amber-700 hover:text-amber-800 font-serif-display text-xl tracking-wide py-4 px-14 rounded-full shadow-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-3xl border border-white/40"
+              >
+                RSVP Now
+              </button>
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div className={`text-center mb-10 transition-all duration-1000 delay-900 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="inline-block bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-5 shadow-lg border border-amber-100">
+              <p className="text-xs tracking-[0.3em] uppercase text-amber-700/80 mb-2">Questions?</p>
+              <a
+                href={`mailto:${eventDetails.contact}`}
+                className="text-blue-600 hover:text-blue-700 font-medium underline flex items-center justify-center gap-2 text-base"
+              >
+                <Mail className="w-4 h-4" />
+                {eventDetails.contact}
+              </a>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center mt-16 relative">
-            <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 shadow-lg border border-white/50">
-              <div className="flex items-center justify-center mb-4">
-                <Heart className="w-5 h-5 text-pink-400 mr-2" />
-                <p className="text-gray-600 font-medium">
-                  © 2025 {eventDetails.couple} Baby Shower
-                </p>
-                <Heart className="w-5 h-5 text-pink-400 ml-2" />
-              </div>
-              <p className="text-gray-500 text-sm italic">
-                Made with love for our growing family ✨
-              </p>
-              
-              {/* Discrete Admin Access */}
-              <button
-                onClick={handleAdminAccess}
-                className="mt-6 text-xs text-gray-400 hover:text-gray-600 transition-colors duration-200 flex items-center gap-1 mx-auto opacity-50 hover:opacity-100"
-                title="Admin Access"
-              >
-                <Settings className="w-3 h-3" />
-                Admin
-              </button>
-            </div>
+          <div className={`text-center pb-10 transition-all duration-1000 delay-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <OrnamentDivider className="mb-6" />
+            <p className="font-script text-3xl text-amber-700 mb-1">With love and blessings</p>
+            <p className="text-xs tracking-[0.3em] uppercase text-gray-500">The Martinez Family</p>
+
+            {/* Discrete Admin Access */}
+            <button
+              onClick={handleAdminAccess}
+              className="mt-6 text-xs text-gray-400 hover:text-gray-600 transition-colors opacity-50 hover:opacity-100"
+            >
+              Admin
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Custom CSS for animations */}
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.05); }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        .animate-twinkle {
+          animation: twinkle 2s ease-in-out infinite;
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 4s ease-in-out infinite;
+        }
+        .animate-fade-in {
+          animation: fade-in 1s ease-out;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f5efe1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #c9a14a;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #a98538;
+        }
+      `}</style>
     </div>
   );
 };

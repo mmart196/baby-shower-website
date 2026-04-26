@@ -1,50 +1,75 @@
-# React + TypeScript + Vite
+# Baptism RSVP Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A beautiful, responsive RSVP website for Baby Martinez's baptism celebration. Built with React, TypeScript, Tailwind CSS, and Supabase.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- ✨ Elegant baptism-themed design (white, gold, blue colors)
+- 📝 RSVP form with guest count and dietary restrictions
+- 📊 Admin dashboard to manage RSVPs
+- 💾 Supabase database for persistent storage
+- 📱 Mobile-responsive design
+- 🔒 Simple password protection for admin access
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### 1. Install Dependencies
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+cd baptism-rsvp
+pnpm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### 2. Set Up Supabase
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+1. Go to [supabase.com](https://supabase.com) and create a new project
+2. Copy your Project URL and Anon Key from Settings > API
+3. Update `src/lib/supabase.ts` with your credentials:
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```typescript
+const supabaseUrl = 'https://your-project-id.supabase.co'
+const supabaseAnonKey = 'your-anon-key'
 ```
+
+4. Run the SQL in `database/baptism-schema.sql` in the Supabase SQL Editor
+
+### 3. Run Locally
+
+```bash
+pnpm dev
+```
+
+### 4. Admin Access
+
+- Go to `#admin` in the URL
+- Password: `baptism2025`
+- View, filter, and export RSVPs
+
+## Event Details
+
+Update these in `src/data/initialData.ts`:
+
+- Baby's name
+- Date and time
+- Church location
+- Contact email
+
+## Deployment
+
+Build for production:
+
+```bash
+pnpm build
+```
+
+Deploy the `dist` folder to Vercel, Netlify, or any static host.
+
+## Customization
+
+- Colors: Edit Tailwind classes (amber = gold, blue = accent)
+- Fonts: Already set to Playfair Display (headings) and Inter (body)
+- Images: Replace the photo placeholder in Homepage.tsx
+
+---
+
+Made with love for Baby Martinez's special day ✝️
