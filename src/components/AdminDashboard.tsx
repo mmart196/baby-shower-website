@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRSVP } from '../hooks/useRSVP';
-import { LogOut, Home, Users, Check, X, Trash2, Download, Utensils, Beef, Drumstick } from 'lucide-react';
+import { LogOut, Home, Users, Check, X, Trash2, Download, Utensils } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -16,37 +16,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     return true;
   });
 
-  // Count meal preferences
+  // Count meal preferences — prefer the per-guest array; fall back to
+  // the legacy "X Beef, Y Chicken" text for older RSVPs.
   const mealCounts = rsvps
     .filter(r => r.attending)
     .reduce((acc, rsvp) => {
-      const mealText = rsvp.dietaryRestrictions || '';
-      const beefMatch = mealText.match(/(\d+)\s*Beef/i);
-      const chickenMatch = mealText.match(/(\d+)\s*Chicken/i);
-      
-      if (beefMatch) {
-        acc.beef += parseInt(beefMatch[1]) || 0;
-      }
-      if (chickenMatch) {
-        acc.chicken += parseInt(chickenMatch[1]) || 0;
+      if (rsvp.guests && rsvp.guests.length > 0) {
+        acc.beef += rsvp.guests.filter(g => g.meal === 'beef').length;
+        acc.chicken += rsvp.guests.filter(g => g.meal === 'chicken').length;
+      } else {
+        const mealText = rsvp.dietaryRestrictions || '';
+        const beefMatch = mealText.match(/(\d+)\s*Beef/i);
+        const chickenMatch = mealText.match(/(\d+)\s*Chicken/i);
+        if (beefMatch) acc.beef += parseInt(beefMatch[1]) || 0;
+        if (chickenMatch) acc.chicken += parseInt(chickenMatch[1]) || 0;
       }
       return acc;
     }, { beef: 0, chicken: 0 });
 
   const handleExport = () => {
-    const csvContent = [
-      ['Name', 'Email', 'Phone', 'Attending', 'Guests', 'Meals', 'Message', 'Submitted'].join(','),
-      ...filteredRSVPs.map(rsvp => [
-        `"${rsvp.name}"`,
-        `"${rsvp.email || ''}"`,
-        `"${rsvp.phone || ''}"`,
-        rsvp.attending ? 'Yes' : 'No',
-        rsvp.guestCount,
-        `"${rsvp.dietaryRestrictions || ''}"`,
-        `"${rsvp.message || ''}"`,
-        new Date(rsvp.submittedAt).toLocaleDateString()
-      ].join(','))
-    ].join('\n');
+    // One row per guest so a kitchen/seating list can be filtered easily.
+    const rows: string[][] = [];
+    rows.push([
+      'RSVP Contact', 'Email', 'Phone', 'Attending',
+      'Guest Name', 'Meal', 'Message', 'Submitted'
+    ]);
+
+    for (const rsvp of filteredRSVPs) {
+      const submitted = new Date(rsvp.submittedAt).toLocaleDateString();
+      const guestRows = (rsvp.guests && rsvp.guests.length > 0)
+        ? rsvp.guests.map(g => [g.name, g.meal === 'beef' ? 'Beef' : 'Chicken'])
+        : [['', rsvp.dietaryRestrictions || '']];
+
+      for (const [guestName, meal] of guestRows) {
+        rows.push([
+          rsvp.name,
+          rsvp.email || '',
+          rsvp.phone || '',
+          rsvp.attending ? 'Yes' : 'No',
+          guestName,
+          meal,
+          rsvp.message || '',
+          submitted,
+        ]);
+      }
+    }
+
+    const csvContent = rows
+      .map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -233,7 +251,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                         </span>
                       </td>
                       <td className="px-5 py-4">
-                        {rsvp.dietaryRestrictions ? (
+                        {rsvp.guests && rsvp.guests.length > 0 ? (
+                          <ul className="space-y-1 min-w-[180px]">
+                            {rsvp.guests.map((g, i) => (
+                              <li key={i} className="flex items-center justify-between gap-3 text-sm">
+                                <span className="text-gray-800 truncate">{g.name || <em className="text-gray-400">unnamed</em>}</span>
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium flex-none ${
+                                    g.meal === 'beef'
+                                      ? 'bg-red-100 text-red-700'
+                                      : 'bg-amber-100 text-amber-700'
+                                  }`}
+                                >
+                                  {g.meal === 'beef' ? '🥩 Beef' : '🍗 Chicken'}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : rsvp.dietaryRestrictions ? (
                           <div className="flex flex-wrap gap-1">
                             {rsvp.dietaryRestrictions.includes('Beef') && (
                               <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium">

@@ -27,6 +27,11 @@ export interface PaymentOption {
   description: string;
 }
 
+export interface Guest {
+  name: string;
+  meal: 'beef' | 'chicken';
+}
+
 export interface RSVP {
   id: string;
   name: string;
@@ -35,6 +40,7 @@ export interface RSVP {
   attending: boolean;
   guestCount: number;
   dietaryRestrictions?: string;
+  guests?: Guest[];
   message?: string;
   submittedAt: Date;
 }
