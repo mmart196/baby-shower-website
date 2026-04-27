@@ -172,11 +172,11 @@ const FormalDate: React.FC = () => (
         </div>
       </div>
 
-      {/* Time */}
+      {/* Schedule summary */}
       <div className="flex items-center justify-center gap-2 md:gap-3">
         <span className="h-px w-8 md:w-14 bg-amber-400/50" />
-        <p className="font-serif-display text-xl md:text-2xl text-amber-800 tabular-nums whitespace-nowrap">
-          10 AM
+        <p className="font-serif-display text-base md:text-lg text-amber-800 whitespace-nowrap">
+          Ceremony 10 AM · Reception 11:30 AM
         </p>
         <span className="h-px w-8 md:w-14 bg-amber-400/50" />
       </div>
@@ -291,20 +291,13 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
         <div className="max-w-5xl mx-auto">
 
           {/* Hero Section */}
-          <div className={`text-center pt-12 pb-12 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`text-center pt-12 pb-10 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <p className="text-xs md:text-sm text-amber-700/80 font-medium tracking-[0.4em] uppercase mb-6 animate-fade-in">
-              Together with their family
-            </p>
-
-            <p className="font-serif-display italic text-2xl md:text-3xl text-gray-700 mb-2">
-              Michael <span className="text-amber-700">&amp;</span> Rachel
-            </p>
-            <p className="text-xs md:text-sm text-gray-500 tracking-[0.3em] uppercase mb-8">
-              joyfully invite you to celebrate the
+              You're invited to the Baptism of
             </p>
 
             {/* Cross Icon with glow */}
-            <div className="mb-8 relative">
+            <div className="mb-6 relative">
               <div className="absolute inset-0 bg-amber-400 blur-3xl opacity-20 rounded-full"></div>
               <div className="relative flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-amber-400 mr-4 animate-pulse" />
@@ -315,19 +308,27 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            <h1 className="font-serif-display text-6xl md:text-8xl font-light tracking-wide text-gray-900 leading-none mb-2 engraved-text">
-              Holy Baptism
-            </h1>
-            <p className="text-xs md:text-sm text-gray-500 tracking-[0.4em] uppercase mb-4">— of —</p>
-            <h2 className="font-script text-6xl md:text-8xl text-amber-700 leading-none mb-8 engraved-text">
+            <h1 className="font-script text-7xl md:text-9xl text-amber-700 leading-none mb-3 engraved-text">
               Eric Martinez
-            </h2>
+            </h1>
+            <p className="font-serif-display italic text-base md:text-lg text-gray-600 mb-8">
+              Son of Michael <span className="text-amber-700">&amp;</span> Rachel Martinez
+            </p>
 
             <OrnamentDivider className="mb-8" />
 
             <div className="flex justify-center mb-8">
               <FormalDate />
             </div>
+
+            {/* Primary CTA — visible without scrolling */}
+            <button
+              onClick={() => onNavigate('rsvp')}
+              className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-serif-display text-lg md:text-xl tracking-wide py-4 px-12 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300 mb-8"
+            >
+              <UserCheck className="w-5 h-5" />
+              RSVP by {rsvpDeadline}
+            </button>
 
             <p className="font-serif-display italic text-base md:text-lg text-gray-600 max-w-xl mx-auto leading-relaxed">
               "Behold, children are a heritage from the Lord."
@@ -338,103 +339,98 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
           {/* Countdown */}
           <div className={`mb-14 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <p className="text-center text-xs tracking-[0.4em] uppercase text-amber-700/80 mb-4">
-              Counting the days
+              Counting down
             </p>
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl py-6 px-4 shadow-md border border-amber-100 max-w-xl mx-auto">
               <Countdown />
             </div>
           </div>
 
-          <OrnamentDivider className="mb-14" />
+          <OrnamentDivider className="mb-10" />
 
-          {/* Event Cards */}
-          <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 mb-14 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-
-            {/* Ceremony Card */}
-            <div className="engraved-card group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-amber-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
-              <div className="text-center mb-5">
-                <div className="inline-flex p-4 bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform mb-4">
-                  <Church className="w-7 h-7 text-white" />
-                </div>
-                <p className="text-[10px] text-amber-700 font-bold uppercase tracking-[0.3em]">The Ceremony</p>
-                <h3 className="font-serif-display text-2xl font-medium text-gray-800 mt-1">{ceremonyDetails.name}</h3>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-start gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
-                    <MapPin className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-gray-800 font-medium">{ceremonyDetails.address}</p>
-                    <a
-                      href={ceremonyDetails.mapLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium mt-1 hover:underline"
-                    >
-                      Get Directions
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-amber-100 rounded-lg flex-none">
-                    <Calendar className="w-5 h-5 text-amber-600" />
-                  </div>
-                  <p className="text-gray-800 font-medium">{ceremonyDetails.date}</p>
-                </div>
-
-                <div className="flex items-center gap-4 group/item hover:bg-amber-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
-                    <Clock className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <p className="text-gray-800 font-medium">{ceremonyDetails.time}</p>
-                </div>
-              </div>
+          {/* Schedule of the Day */}
+          <div className={`mb-14 transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="text-center mb-8">
+              <p className="text-xs tracking-[0.4em] uppercase text-amber-700/80 font-medium">
+                Schedule of the Day
+              </p>
+              <p className="font-serif-display italic text-lg md:text-xl text-gray-600 mt-2">
+                Saturday, May 16, 2026
+              </p>
             </div>
 
-            {/* Reception Card */}
-            <div className="engraved-card group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-blue-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
-              <div className="text-center mb-5">
-                <div className="inline-flex p-4 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform mb-4">
-                  <Utensils className="w-7 h-7 text-white" />
-                </div>
-                <p className="text-[10px] text-blue-700 font-bold uppercase tracking-[0.3em]">The Reception</p>
-                <h3 className="font-serif-display text-2xl font-medium text-gray-800 mt-1">{receptionDetails.name}</h3>
-              </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-              <div className="space-y-3">
-                <div className="flex items-start gap-4 group/item hover:bg-blue-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
-                    <MapPin className="w-5 h-5 text-blue-600" />
+              {/* Ceremony Card */}
+              <div className="engraved-card group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-amber-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
+                {/* Time-led header */}
+                <div className="flex items-center gap-4 mb-6 pb-5 border-b border-amber-100">
+                  <div className="p-4 bg-gradient-to-br from-amber-400 to-amber-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-none">
+                    <Church className="w-7 h-7 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-gray-800 font-medium">{receptionDetails.address}</p>
-                    <a
-                      href={receptionDetails.mapLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium mt-1 hover:underline"
-                    >
-                      Get Directions
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                    <p className="text-[10px] text-amber-700 font-bold uppercase tracking-[0.3em]">First</p>
+                    <p className="font-serif-display text-3xl md:text-4xl font-medium text-gray-900 leading-none tabular-nums">
+                      10:00 <span className="text-2xl text-gray-500">AM</span>
+                    </p>
+                    <p className="font-serif-display italic text-amber-700 text-base mt-1">Baptism Ceremony</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 group/item hover:bg-blue-50 p-3 rounded-xl transition-colors">
-                  <div className="p-2 bg-blue-100 rounded-lg flex-none">
-                    <Clock className="w-5 h-5 text-blue-600" />
+                <h3 className="font-serif-display text-xl font-medium text-gray-800 mb-3">
+                  {ceremonyDetails.name}
+                </h3>
+                <p className="text-gray-700 mb-3 flex items-start gap-2">
+                  <MapPin className="w-5 h-5 text-blue-600 flex-none mt-0.5" />
+                  <span>{ceremonyDetails.address}</span>
+                </p>
+                <a
+                  href={ceremonyDetails.mapLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                >
+                  Get Directions
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              {/* Reception Card */}
+              <div className="engraved-card group bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-blue-100 hover:shadow-3xl hover:scale-[1.02] transition-all duration-500">
+                {/* Time-led header */}
+                <div className="flex items-center gap-4 mb-6 pb-5 border-b border-blue-100">
+                  <div className="p-4 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl shadow-lg group-hover:scale-110 transition-transform flex-none">
+                    <Utensils className="w-7 h-7 text-white" />
                   </div>
-                  <p className="text-gray-800 font-medium">{receptionDetails.time}</p>
+                  <div className="flex-1">
+                    <p className="text-[10px] text-blue-700 font-bold uppercase tracking-[0.3em]">Then</p>
+                    <p className="font-serif-display text-3xl md:text-4xl font-medium text-gray-900 leading-none tabular-nums">
+                      11:30 <span className="text-2xl text-gray-500">AM</span>
+                    </p>
+                    <p className="font-serif-display italic text-blue-700 text-base mt-1">Reception &amp; Lunch</p>
+                  </div>
                 </div>
 
-                <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100">
-                  <p className="text-amber-800 font-medium flex items-center gap-2">
+                <h3 className="font-serif-display text-xl font-medium text-gray-800 mb-3">
+                  {receptionDetails.name}
+                </h3>
+                <p className="text-gray-700 mb-3 flex items-start gap-2">
+                  <MapPin className="w-5 h-5 text-blue-600 flex-none mt-0.5" />
+                  <span>{receptionDetails.address}</span>
+                </p>
+                <a
+                  href={receptionDetails.mapLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline mb-4"
+                >
+                  Get Directions
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <div className="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+                  <p className="text-amber-800 text-sm flex items-center gap-2">
                     <Utensils className="w-4 h-4 flex-none" />
-                    Menu: <span className="font-bold">Beef or Chicken</span>
+                    Choose <span className="font-bold">Beef</span> or <span className="font-bold">Chicken</span> when you RSVP
                   </p>
                 </div>
               </div>
@@ -479,18 +475,23 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
             </div>
 
             <div className="relative z-10">
-              <p className="font-script text-4xl md:text-5xl text-white/95 mb-2">Kindly</p>
-              <p className="text-white/80 text-xs uppercase tracking-[0.5em] mb-6 font-medium">
-                Respond
+              <p className="text-white/80 text-xs uppercase tracking-[0.5em] mb-3 font-medium">
+                Please Respond
               </p>
-              <div className="inline-flex items-center justify-center gap-3 px-5 py-2 bg-white/15 rounded-full mb-8 backdrop-blur-sm border border-white/20">
+              <h3 className="font-serif-display text-3xl md:text-5xl text-white mb-3 leading-tight">
+                Will you join us?
+              </h3>
+              <div className="inline-flex items-center justify-center gap-3 px-5 py-2 bg-white/15 rounded-full mb-6 backdrop-blur-sm border border-white/20">
                 <UserCheck className="w-4 h-4 text-white/90" />
                 <p className="text-white font-medium tracking-wide text-sm">
-                  By {rsvpDeadline}
+                  Kindly reply by {rsvpDeadline}
                 </p>
               </div>
-              <p className="font-serif-display italic text-white/95 mb-8 text-xl max-w-lg mx-auto">
-                Reception menu — please choose <span className="font-semibold not-italic">Beef</span> or <span className="font-semibold not-italic">Chicken</span> for each guest
+              <p className="font-serif-display italic text-white/95 mb-2 text-lg md:text-xl max-w-lg mx-auto">
+                The form takes about a minute.
+              </p>
+              <p className="text-white/85 text-sm mb-8 max-w-lg mx-auto">
+                You'll let us know how many guests are coming and choose <span className="font-semibold">Beef</span> or <span className="font-semibold">Chicken</span> for each one.
               </p>
               <button
                 onClick={() => onNavigate('rsvp')}
