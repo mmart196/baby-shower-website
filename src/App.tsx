@@ -69,6 +69,7 @@ function App() {
 
   const navigate = (page: Page) => {
     setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'auto' });
     switch (page) {
       case 'home':
         window.location.hash = '';
