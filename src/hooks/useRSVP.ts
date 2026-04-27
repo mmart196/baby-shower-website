@@ -1,8 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RSVP } from '../types';
+import { RSVP, Guest } from '../types';
 import { supabase } from '../lib/supabase';
 
 const FALLBACK_STORAGE_KEY = 'baby-shower-rsvps-fallback';
+
+// dietary_restrictions stores either:
+//   new format (JSON): { guests: Guest[], summary: string }
+//   legacy format    : free-text summary like "2 Beef, 1 Chicken"
+// This helper handles both.
+function parseDietary(raw: string | null | undefined): { guests?: Guest[]; summary?: string } {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.guests)) {
+      return { guests: parsed.guests as Guest[], summary: parsed.summary };
+    }
+  } catch {
+    // not JSON — fall through to legacy
+  }
+  return { summary: raw };
+}
+
+function serializeDietary(guests: Guest[] | undefined): string | null {
+  if (!guests || guests.length === 0) return null;
+  const beefCount = guests.filter(g => g.meal === 'beef').length;
+  const chickenCount = guests.filter(g => g.meal === 'chicken').length;
+  const summary = `${beefCount} Beef, ${chickenCount} Chicken`;
+  return JSON.stringify({ guests, summary });
+}
 
 export const useRSVP = () => {
   const [rsvps, setRsvps] = useState<RSVP[]>([]);
@@ -55,17 +80,21 @@ export const useRSVP = () => {
       }
 
       // Convert database format to app format
-      const mappedRSVPs: RSVP[] = (data || []).map(rsvp => ({
-        id: rsvp.id,
-        name: rsvp.name,
-        email: rsvp.email || undefined,
-        phone: rsvp.phone || undefined,
-        attending: rsvp.attending,
-        guestCount: rsvp.guest_count,
-        dietaryRestrictions: rsvp.dietary_restrictions || undefined,
-        message: rsvp.message || undefined,
-        submittedAt: new Date(rsvp.created_at)
-      }));
+      const mappedRSVPs: RSVP[] = (data || []).map(rsvp => {
+        const { guests, summary } = parseDietary(rsvp.dietary_restrictions);
+        return {
+          id: rsvp.id,
+          name: rsvp.name,
+          email: rsvp.email || undefined,
+          phone: rsvp.phone || undefined,
+          attending: rsvp.attending,
+          guestCount: rsvp.guest_count,
+          dietaryRestrictions: summary || undefined,
+          guests,
+          message: rsvp.message || undefined,
+          submittedAt: new Date(rsvp.created_at)
+        };
+      });
 
       setRsvps(mappedRSVPs);
       saveToFallback(mappedRSVPs);
@@ -83,6 +112,7 @@ export const useRSVP = () => {
 
   // Submit new RSVP
   const submitRSVP = useCallback(async (rsvpData: Omit<RSVP, 'id' | 'submittedAt'>) => {
+    const dietaryPayload = serializeDietary(rsvpData.guests);
     try {
       const { data, error: supabaseError } = await supabase
         .from('rsvps')
@@ -92,7 +122,7 @@ export const useRSVP = () => {
           phone: rsvpData.phone || null,
           attending: rsvpData.attending,
           guest_count: rsvpData.guestCount,
-          dietary_restrictions: rsvpData.dietaryRestrictions || null,
+          dietary_restrictions: dietaryPayload,
           message: rsvpData.message || null
         })
         .select()
@@ -102,6 +132,7 @@ export const useRSVP = () => {
         throw supabaseError;
       }
 
+      const { guests, summary } = parseDietary(data.dietary_restrictions);
       const newRSVP: RSVP = {
         id: data.id,
         name: data.name,
@@ -109,7 +140,8 @@ export const useRSVP = () => {
         phone: data.phone || undefined,
         attending: data.attending,
         guestCount: data.guest_count,
-        dietaryRestrictions: data.dietary_restrictions || undefined,
+        dietaryRestrictions: summary || undefined,
+        guests,
         message: data.message || undefined,
         submittedAt: new Date(data.created_at)
       };
@@ -117,22 +149,25 @@ export const useRSVP = () => {
       const updatedRSVPs = [newRSVP, ...rsvps];
       setRsvps(updatedRSVPs);
       saveToFallback(updatedRSVPs);
-      
+
       return newRSVP;
     } catch (err) {
       console.error('Error submitting RSVP:', err);
-      
+
       // Fallback: save to localStorage only
+      const { guests, summary } = parseDietary(dietaryPayload);
       const fallbackRSVP: RSVP = {
         id: `fallback-${Date.now()}`,
         ...rsvpData,
+        dietaryRestrictions: summary,
+        guests,
         submittedAt: new Date()
       };
-      
+
       const updatedRSVPs = [fallbackRSVP, ...rsvps];
       setRsvps(updatedRSVPs);
       saveToFallback(updatedRSVPs);
-      
+
       throw new Error('Failed to submit RSVP to database. Saved locally.');
     }
   }, [rsvps, saveToFallback]);
