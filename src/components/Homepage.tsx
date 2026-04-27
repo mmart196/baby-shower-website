@@ -312,7 +312,7 @@ export const Homepage: React.FC<HomepageProps> = ({ onNavigate }) => {
               Eric Martinez
             </h1>
             <p className="font-serif-display italic text-base md:text-lg text-gray-600 mb-8">
-              Son of Michael <span className="text-amber-700">&amp;</span> Rachel Martinez
+              Son of Rachel <span className="text-amber-700">&amp;</span> Michael Martinez
             </p>
 
             <OrnamentDivider className="mb-8" />
