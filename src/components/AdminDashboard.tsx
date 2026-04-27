@@ -187,128 +187,146 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </div>
         </div>
 
-        {/* RSVPs Table */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-amber-100">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-amber-50 to-amber-100 border-b border-amber-200">
-                <tr>
-                  <th className="text-left px-5 py-4 text-sm font-bold text-gray-700">Name</th>
-                  <th className="text-left px-5 py-4 text-sm font-bold text-gray-700">Contact</th>
-                  <th className="text-center px-5 py-4 text-sm font-bold text-gray-700">Status</th>
-                  <th className="text-center px-5 py-4 text-sm font-bold text-gray-700">Guests</th>
-                  <th className="text-center px-5 py-4 text-sm font-bold text-gray-700">Meals</th>
-                  <th className="text-left px-5 py-4 text-sm font-bold text-gray-700">Message</th>
-                  <th className="text-center px-5 py-4 text-sm font-bold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredRSVPs.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-16 text-center text-gray-400">
-                      <div className="flex flex-col items-center gap-3">
-                        <Users className="w-12 h-12 text-gray-300" />
-                        <p className="text-lg">No RSVPs found</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredRSVPs.map((rsvp) => (
-                    <tr key={rsvp.id} className="hover:bg-amber-50/50 transition-colors">
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center text-white font-bold">
-                            {rsvp.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-gray-800">{rsvp.name}</p>
-                            <p className="text-xs text-gray-400">
-                              {new Date(rsvp.submittedAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        {rsvp.email && <p className="text-sm text-gray-600">{rsvp.email}</p>}
-                        {rsvp.phone && <p className="text-sm text-gray-500">{rsvp.phone}</p>}
-                      </td>
-                      <td className="px-5 py-4 text-center">
-                        {rsvp.attending ? (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                            <Check className="w-4 h-4" />
-                            Yes
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                            <X className="w-4 h-4" />
-                            No
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-4 text-center">
-                        <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-700 rounded-full font-bold">
-                          {rsvp.guestCount}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        {rsvp.guests && rsvp.guests.length > 0 ? (
-                          <ul className="space-y-1 min-w-[180px]">
-                            {rsvp.guests.map((g, i) => (
-                              <li key={i} className="flex items-center justify-between gap-3 text-sm">
-                                <span className="text-gray-800 truncate">{g.name || <em className="text-gray-400">unnamed</em>}</span>
-                                <span
-                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium flex-none ${
-                                    g.meal === 'beef'
-                                      ? 'bg-red-100 text-red-700'
-                                      : 'bg-amber-100 text-amber-700'
-                                  }`}
-                                >
-                                  {g.meal === 'beef' ? '🥩 Beef' : '🍗 Chicken'}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : rsvp.dietaryRestrictions ? (
-                          <div className="flex flex-wrap gap-1">
-                            {rsvp.dietaryRestrictions.includes('Beef') && (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium">
-                                🥩 {rsvp.dietaryRestrictions.match(/(\d+)\s*Beef/)?.[1] || ''}
-                              </span>
-                            )}
-                            {rsvp.dietaryRestrictions.includes('Chicken') && (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
-                                🍗 {rsvp.dietaryRestrictions.match(/(\d+)\s*Chicken/)?.[1] || ''}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 text-sm">-</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="text-sm text-gray-600 max-w-xs truncate">
-                          {rsvp.message || '-'}
-                        </p>
-                      </td>
-                      <td className="px-5 py-4 text-center">
-                        <button
-                          onClick={() => {
-                            if (confirm('Delete this RSVP?')) {
-                              deleteRSVP(rsvp.id);
-                            }
-                          }}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+        {/* RSVP Cards — each contact with their guests nested below */}
+        {filteredRSVPs.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-xl border border-amber-100 p-16 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <Users className="w-12 h-12 text-gray-300" />
+              <p className="text-lg text-gray-400">No RSVPs found</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredRSVPs.map((rsvp) => {
+              const beefCount = rsvp.guests
+                ? rsvp.guests.filter(g => g.meal === 'beef').length
+                : parseInt(rsvp.dietaryRestrictions?.match(/(\d+)\s*Beef/i)?.[1] || '0');
+              const chickenCount = rsvp.guests
+                ? rsvp.guests.filter(g => g.meal === 'chicken').length
+                : parseInt(rsvp.dietaryRestrictions?.match(/(\d+)\s*Chicken/i)?.[1] || '0');
+
+              return (
+                <div
+                  key={rsvp.id}
+                  className="bg-white rounded-2xl shadow-lg border border-amber-100 overflow-hidden"
+                >
+                  {/* Header: contact who submitted the RSVP */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-gradient-to-r from-amber-50 to-white border-b border-amber-100">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-none">
+                        {rsvp.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900 text-lg">{rsvp.name}</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
+                          {rsvp.email && <span>{rsvp.email}</span>}
+                          {rsvp.phone && <span>{rsvp.phone}</span>}
+                          <span className="text-gray-400">
+                            Submitted {new Date(rsvp.submittedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {rsvp.attending ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                          <Check className="w-4 h-4" />
+                          Attending
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                          <X className="w-4 h-4" />
+                          Declined
+                        </span>
+                      )}
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                        <Users className="w-4 h-4" />
+                        {rsvp.guestCount} {rsvp.guestCount === 1 ? 'guest' : 'guests'}
+                      </span>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete RSVP from ${rsvp.name}?`)) {
+                            deleteRSVP(rsvp.id);
+                          }
+                        }}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all hover:scale-110"
+                        title="Delete this RSVP"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Body: nested guest list (only for attending RSVPs) */}
+                  {rsvp.attending && (
+                    <div className="p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Utensils className="w-4 h-4 text-amber-600" />
+                        <p className="text-xs uppercase tracking-wider font-bold text-amber-700">
+                          Guests &amp; Meals
+                        </p>
+                        <span className="ml-auto flex items-center gap-2 text-xs text-gray-500">
+                          {beefCount > 0 && <span className="px-2 py-0.5 bg-red-50 text-red-700 rounded">🥩 {beefCount}</span>}
+                          {chickenCount > 0 && <span className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded">🍗 {chickenCount}</span>}
+                        </span>
+                      </div>
+
+                      {rsvp.guests && rsvp.guests.length > 0 ? (
+                        <ul className="border-l-2 border-amber-200 pl-4 space-y-2">
+                          {rsvp.guests.map((g, i) => (
+                            <li
+                              key={i}
+                              className="flex items-center justify-between gap-3 bg-gray-50 px-4 py-2.5 rounded-lg"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span className="flex-none w-6 h-6 bg-white border border-amber-200 rounded-full flex items-center justify-center text-xs font-bold text-amber-700">
+                                  {i + 1}
+                                </span>
+                                <span className="font-medium text-gray-800 truncate">
+                                  {g.name || <em className="text-gray-400">unnamed</em>}
+                                </span>
+                              </div>
+                              <span
+                                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold flex-none ${
+                                  g.meal === 'beef'
+                                    ? 'bg-red-100 text-red-700'
+                                    : 'bg-amber-100 text-amber-700'
+                                }`}
+                              >
+                                {g.meal === 'beef' ? '🥩 Beef' : '🍗 Chicken'}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <div className="border-l-2 border-gray-200 pl-4 py-2 text-sm text-gray-500 italic bg-gray-50 rounded-lg px-4">
+                          Per-guest names weren't captured for this RSVP — totals only:{' '}
+                          {beefCount > 0 && <span className="font-medium">🥩 {beefCount} Beef</span>}
+                          {beefCount > 0 && chickenCount > 0 && ' · '}
+                          {chickenCount > 0 && <span className="font-medium">🍗 {chickenCount} Chicken</span>}
+                          {beefCount === 0 && chickenCount === 0 && <span>none recorded</span>}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Message */}
+                  {rsvp.message && (
+                    <div className="px-5 pb-5">
+                      <div className="bg-gradient-to-r from-amber-50 to-blue-50 border border-amber-100 rounded-lg p-4">
+                        <p className="text-xs uppercase tracking-wider font-bold text-amber-700 mb-1">
+                          Message
+                        </p>
+                        <p className="text-sm text-gray-700 italic">"{rsvp.message}"</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
